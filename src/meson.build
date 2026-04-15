@@ -1,6 +1,6 @@
 src_files += files(
-    'json.c',
-    'json.h',
+    'tjson.c',
+    'tjson.h',
     '_impl/utils.h',
     '_impl/utf8.h',
     '_impl/utf8.c',
@@ -9,7 +9,7 @@ src_files += files(
 )
 
 
-install_headers('json.h', preserve_path : true)
+install_headers('tjson.h', preserve_path : true)
 
 c_variant_generator = find_program(
     'c_variant_generator',
@@ -46,4 +46,4 @@ if stdc_version_int >= 202000
     compile_flags += '-D_TJSON_COMPILE_WITH_NARROWED_ENUMS'
 endif
 
-
+inc_dirs += include_directories('.')
