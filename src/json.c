@@ -1,10 +1,9 @@
-
 #include "./json.h"
 
-#include <utils/path.h>
-#include <utils/sized_buffer.h>
-#include <utils/string_builder.h>
-#include <utils/utf8_helper.h>
+// #include <utils/sized_buffer.h>
+// #include <utils/string_builder.h>
+#include "./helper/path.h"
+#include "./helper/utf8.h"
 
 #include <math.h>
 #include <tmap.h>
@@ -1183,7 +1182,23 @@ NODISCARD static tstr_static json_string_add_char_impl(JsonString* const json_st
 	return tstr_static_null();
 }
 
-GENERATE_VARIANT_ALL_UTF8_NEXT_CHAR_RESULT()
+// manual "variant", but only used internally, so it's fine
+typedef struct {
+	bool is_error;
+	union {
+		Utf8Codepoint ok;
+		JsonError error;
+	} data;
+} Utf8NextCharResult;
+
+NODISCARD static inline Utf8NextCharResult new_utf8_next_char_result_error(JsonError const error) {
+	return (Utf8NextCharResult){ .is_error = true, .data = { .error = error } };
+}
+
+NODISCARD MAYBE_UNUSED static inline Utf8NextCharResult
+new_utf8_next_char_result_ok(Utf8Codepoint const ok) {
+	return (Utf8NextCharResult){ .is_error = false, .data = { .ok = ok } };
+}
 
 NODISCARD static Utf8NextCharResult utf8_get_next_char_and_consume(JsonParseState* const state) {
 
@@ -1266,12 +1281,13 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 
 		const Utf8NextCharResult result = utf8_get_next_char_and_consume(state);
 
-		IF_UTF8_NEXT_CHAR_RESULT_IS_ERROR_CONST(result) {
+		if(result.is_error) {
 			FREE_AT_END();
-			return new_json_parse_result_error(error);
+			return new_json_parse_result_error(result.data.error);
 		}
 
-		Utf8Codepoint codepoint = utf8_next_char_result_get_as_ok(result);
+		assert(!result.is_error);
+		Utf8Codepoint codepoint = result.data.ok;
 
 		if(codepoint < 0) {
 			FREE_AT_END();
@@ -1541,17 +1557,17 @@ NODISCARD JsonParseResult json_value_parse_from_str(const tstr_view data) {
 
 NODISCARD JsonParseResult json_value_parse_from_file(const tstr* const file_path) {
 
-	size_t file_size = 0;
+	const ReadFileResult file_result = read_entire_file(file_path);
 
-	const void* const file_data = read_entire_file(tstr_cstr(file_path), &file_size);
-
-	if(file_data == NULL) {
-		return new_json_parse_result_error(make_json_error_at(
-		    make_null_source_location(), TSTR_STATIC_LIT("Error in reading file")));
+	if(file_result.is_error) {
+		return new_json_parse_result_error(
+		    make_json_error_at(make_null_source_location(), file_result.data.error));
 	}
 
-	const tstr_view str_view =
-	    tstr_view_from_readonly_buffer((ReadonlyBuffer){ .data = file_data, .size = file_size });
+	assert(!file_result.is_error);
+	const tstr file = file_result.data.file;
+
+	const tstr_view str_view = tstr_as_view(&file);
 
 	const JsonParseState state = { .view = str_view,
 		                           .loc = (SourceLocation){
@@ -2163,7 +2179,7 @@ NODISCARD JsonString* json_get_string_from_tstr_view(tstr_view str_view) {
 		return NULL;
 	}
 
-	const Utf8DataResult result = get_utf8_string(str_view.data, (long)(str_view.len));
+	const Utf8DataResult result = get_utf8_string(str_view);
 
 #define FREE_AT_END() \
 	do { \

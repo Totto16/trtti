@@ -1,7 +1,8 @@
 #pragma once
 
 #include <stdbool.h>
-#include <utils/utils.h>
+
+#include "./utils.h"
 
 #include "json_variants.h"
 
