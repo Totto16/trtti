@@ -27,11 +27,10 @@ json_variants_generated_tgt = custom_target(
     ],
     input: [meson.project_source_root() / 'src' / 'json.variants.def.json'],
     output: ['json_variants.h'],
-    build_subdir: 'generated' / 'c' / 'variants',
+    build_subdir: 'generated' / 'json' / 'variants',
     install: true,
     install_dir: 'generated'
 )
-
 
 json_variants_dep = declare_dependency(
     version: meson.project_version(),
