@@ -1,8 +1,10 @@
-
-
 #pragma once
 
-#include "../utils.h"
+#ifndef _TJSON_IMPL_INTERNAL__
+	#error "can only be used internally"
+#endif
+
+#include "../_impl/utils.h"
 
 #include <tstr.h>
 

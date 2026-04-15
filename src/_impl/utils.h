@@ -1,6 +1,10 @@
 
 #pragma once
 
+#ifndef _TJSON_IMPL_INTERNAL__
+	#error "can only be used internally"
+#endif
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -60,6 +64,49 @@ extern "C" {
 		} while(false)
 
 #endif
+
+#define UNUSED(v) ((void)(v))
+
+// uses snprintf feature with passing NULL,0 as first two arguments to automatically determine the
+// required buffer size, for more read man page
+// for variadic functions its easier to use macro
+// magic, attention, use this function in the right way, you have to prepare a char* that is set to
+// null, then it works best! snprintf is safer then sprintf, since it guarantees some things, also
+// it has a failure indicator
+#define FORMAT_STRING_IMPL(toStore, statement, logger_fn, format, ...) \
+	{ \
+		char* internalBuffer = *toStore; \
+		if(internalBuffer != NULL) { \
+			free(internalBuffer); \
+		} \
+		const LibCInt toWrite = snprintf(NULL, 0, format, __VA_ARGS__) + 1; \
+		internalBuffer = (char*)malloc(toWrite * sizeof(char)); \
+		if(!internalBuffer) { \
+			logger_fn("Couldn't allocate memory for %d bytes!\n", toWrite); \
+			statement \
+		} \
+		const LibCInt written = snprintf(internalBuffer, toWrite, format, __VA_ARGS__); \
+		if(written >= toWrite) { \
+			logger_fn("snprintf did write more bytes then it had space in the buffer, available " \
+			          "space: '%d', actually written: '%d'!\n", \
+			          (toWrite) - 1, written); \
+			free(internalBuffer); \
+			statement \
+		} \
+		*toStore = internalBuffer; \
+	} \
+	if(*toStore == NULL) { \
+		logger_fn("snprintf Macro gone wrong: '%s' is pointing to NULL!\n", #toStore); \
+		statement \
+	}
+
+#define FORMAT_STRING(toStore, statement, format, ...) \
+	FORMAT_STRING_IMPL(toStore, statement, IMPL_STDERR_LOGGER, format, __VA_ARGS__)
+
+#define IMPL_STDERR_LOGGER(format, ...) fprintf(stderr, format, __VA_ARGS__)
+
+#define ZERO_STRUCT(Type) (Type){ 0 }
+#define ZERO_ARRAY() { 0 }
 
 // NOTE: these are used for surpressing the clang-tidy error "totto-use-fixed-width-types-var"
 // in places, where we interface with libc, it is intentional, that this check doesn't resolves

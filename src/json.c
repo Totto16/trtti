@@ -1,12 +1,11 @@
 #include "./json.h"
 
-// #include <utils/sized_buffer.h>
-// #include <utils/string_builder.h>
-#include "./helper/path.h"
-#include "./helper/utf8.h"
+#include "./_impl/path.h"
+#include "./_impl/utf8.h"
 
 #include <math.h>
 #include <tmap.h>
+#include <tstr_builder.h>
 #include <tvec.h>
 #include <utf8proc.h>
 
@@ -2059,13 +2058,7 @@ NODISCARD tstr json_value_to_string_advanced(const JsonValue* const json_value,
 
 	json_to_string_variant_impl(string_builder, json_value, options);
 
-	const SizedBuffer buffer = string_builder_release_into_sized_buffer(&string_builder);
-
-	if(buffer.data == NULL) {
-		return tstr_null();
-	}
-
-	return tstr_own(buffer.data, buffer.size, buffer.size);
+	return string_builder_release_into_tstr(&string_builder);
 }
 
 NODISCARD bool json_string_eq(const JsonString* const str1, const JsonString* const str2) {
@@ -2186,12 +2179,13 @@ NODISCARD JsonString* json_get_string_from_tstr_view(tstr_view str_view) {
 		free_json_string(string); \
 	} while(false)
 
-	IF_UTF8_DATA_RESULT_IS_ERROR_IGN(result) {
+	if(result.is_error) {
 		FREE_AT_END();
 		return NULL;
 	}
 
-	const Utf8Data data = utf8_data_result_get_as_ok(result).result;
+	assert(!result.is_error);
+	const Utf8Data data = result.data.result;
 
 	for(size_t i = 0; i < data.size; ++i) {
 		const Utf8Codepoint codepoint = data.data[i];
@@ -2247,9 +2241,7 @@ NODISCARD tstr json_format_source_location(const SourceLocation location) {
 
 	json_format_source_location_impl(string_builder, location);
 
-	const SizedBuffer buffer = string_builder_release_into_sized_buffer(&string_builder);
-
-	return tstr_own(buffer.data, buffer.size, buffer.size);
+	return string_builder_release_into_tstr(&string_builder);
 }
 
 NODISCARD tstr json_format_error(const JsonError error) {
@@ -2262,7 +2254,5 @@ NODISCARD tstr json_format_error(const JsonError error) {
 
 	json_format_source_location_impl(string_builder, error.loc);
 
-	const SizedBuffer buffer = string_builder_release_into_sized_buffer(&string_builder);
-
-	return tstr_own(buffer.data, buffer.size, buffer.size);
+	return string_builder_release_into_tstr(&string_builder);
 }

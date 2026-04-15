@@ -2,7 +2,63 @@
 
 #include <stdbool.h>
 
-#include "./utils.h"
+// public part of the utils
+
+#if _TJSON_COMPILE_WITH_NARROWED_ENUMS
+	#define TJSON_C_23_NARROW_ENUM_TO(x) : x
+	#define TJSON_C_23_ENUM_TYPE(x) x
+#else
+	#define TJSON_C_23_NARROW_ENUM_TO(x)
+	#define TJSON_C_23_ENUM_TYPE(x) int
+#endif
+
+#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202000) || __cplusplus
+	#define TJSON_NODISCARD [[nodiscard]]
+	#define TJSON_MAYBE_UNUSED [[maybe_unused]]
+#else
+    // see e.g. https://www.gnu.org/software/gnulib/manual/html_node/Attributes.html
+	#define TJSON_NODISCARD __attribute__((__warn_unused_result__))
+	#define TJSON_MAYBE_UNUSED __attribute__((__unused__))
+#endif
+
+// cool trick from here:
+// https://stackoverflow.com/questions/777261/avoiding-unused-variables-warnings-when-using-assert-in-a-release-build
+#ifdef NDEBUG
+	#define assert(x) /* NOLINT(readability-identifier-naming) */ \
+		do { \
+			UNUSED((x)); \
+		} while(false)
+
+	#define TJSON_UNREACHABLE() \
+		do { \
+			fprintf(stderr, "[%s %s:%d]: UNREACHABLE\n", __func__, __FILE__, __LINE__); \
+			exit(EXIT_FAILURE); \
+		} while(false)
+
+	#define TJSON_OOM_ASSERT(value, message) \
+		do { \
+			if(!(value)) { \
+				fprintf(stderr, "[%s %s:%d]: OOM: %s\n", __func__, __FILE__, __LINE__, (message)); \
+				exit(EXIT_FAILURE); \
+			} \
+		} while(false)
+
+#else
+	#include <assert.h>
+
+	#define TJSON_UNREACHABLE() \
+		do { \
+			assert(false && "UNREACHABLE"); /* NOLINT(cert-dcl03-c,misc-static-assert) */ \
+		} while(false)
+
+	#define TJSON_OOM_ASSERT(value, message) \
+		do { \
+			assert((value) && (message)); /* NOLINT(cert-dcl03-c,misc-static-assert) */ \
+		} while(false)
+
+#endif
+
+// end of utils
 
 #include "json_variants.h"
 
@@ -45,6 +101,11 @@ typedef struct {
 	tstr_view data;
 } JsonStringSource;
 
+#define C_23_NARROW_ENUM_TO(x) TJSON_C_23_NARROW_ENUM_TO(x)
+#define NODISCARD TJSON_NODISCARD
+#define MAYBE_UNUSED TJSON_MAYBE_UNUSED
+#define UNREACHABLE() TJSON_UNREACHABLE()
+
 GENERATE_VARIANT_ALL_JSON_SOURCE()
 
 typedef struct {
@@ -65,11 +126,16 @@ GENERATE_VARIANT_ALL_JSON_VALUE()
 GENERATE_VARIANT_ALL_JSON_PARSE_RESULT()
 // GCOVR_EXCL_STOP
 
+#undef C_23_NARROW_ENUM_TO
+#undef NODISCARD
+#undef MAYBE_UNUSED
+#undef UNREACHABLE
+
 // parse json strings
 
-NODISCARD JsonParseResult json_value_parse_from_str(tstr_view data);
+TJSON_NODISCARD JsonParseResult json_value_parse_from_str(tstr_view data);
 
-NODISCARD JsonParseResult json_value_parse_from_file(const tstr* file_path);
+TJSON_NODISCARD JsonParseResult json_value_parse_from_file(const tstr* file_path);
 
 void free_json_value(JsonValue* json_value);
 
@@ -79,76 +145,76 @@ typedef struct {
 	size_t indent_size;
 } JsonSerializeOptions;
 
-NODISCARD tstr json_value_to_string(const JsonValue* json_value);
+TJSON_NODISCARD tstr json_value_to_string(const JsonValue* json_value);
 
-NODISCARD tstr json_value_to_string_advanced(const JsonValue* json_value,
-                                             JsonSerializeOptions options);
+TJSON_NODISCARD tstr json_value_to_string_advanced(const JsonValue* json_value,
+                                                   JsonSerializeOptions options);
 
 // utility / get functions
 
-NODISCARD bool json_string_eq(const JsonString* str1, const JsonString* str2);
+TJSON_NODISCARD bool json_string_eq(const JsonString* str1, const JsonString* str2);
 
-NODISCARD size_t json_array_size(const JsonArray* array);
+TJSON_NODISCARD size_t json_array_size(const JsonArray* array);
 
-NODISCARD const JsonValue* json_array_at(const JsonArray* array, size_t index);
+TJSON_NODISCARD const JsonValue* json_array_at(const JsonArray* array, size_t index);
 
-NODISCARD size_t json_object_count(const JsonObject* object);
+TJSON_NODISCARD size_t json_object_count(const JsonObject* object);
 
 typedef struct JsonObjectEntryImpl JsonObjectEntry;
 
-NODISCARD const JsonObjectEntry* json_object_get_entry_by_key(const JsonObject* object,
-                                                              const JsonString* key);
+TJSON_NODISCARD const JsonObjectEntry* json_object_get_entry_by_key(const JsonObject* object,
+                                                                    const JsonString* key);
 
 typedef struct JsonObjectIterImpl JsonObjectIter;
 
-NODISCARD JsonObjectIter* json_object_get_iterator(const JsonObject* object);
+TJSON_NODISCARD JsonObjectIter* json_object_get_iterator(const JsonObject* object);
 
-NODISCARD const JsonObjectEntry* json_object_iterator_next(JsonObjectIter* iter);
+TJSON_NODISCARD const JsonObjectEntry* json_object_iterator_next(JsonObjectIter* iter);
 
 void json_object_free_iterator(JsonObjectIter* iter);
 
-NODISCARD const JsonString* json_object_entry_get_key(const JsonObjectEntry* object_entry);
+TJSON_NODISCARD const JsonString* json_object_entry_get_key(const JsonObjectEntry* object_entry);
 
-NODISCARD const JsonValue* json_object_entry_get_value(const JsonObjectEntry* object_entry);
+TJSON_NODISCARD const JsonValue* json_object_entry_get_value(const JsonObjectEntry* object_entry);
 
 // create functions
 
-NODISCARD JsonString* json_get_string_from_cstr(const char* cstr);
+TJSON_NODISCARD JsonString* json_get_string_from_cstr(const char* cstr);
 
-NODISCARD JsonString* json_get_string_from_tstr(const tstr* str);
+TJSON_NODISCARD JsonString* json_get_string_from_tstr(const tstr* str);
 
-NODISCARD JsonString* json_get_string_from_tstr_view(tstr_view str_view);
+TJSON_NODISCARD JsonString* json_get_string_from_tstr_view(tstr_view str_view);
 
 void free_json_string(JsonString* json_string);
 
-NODISCARD JsonArray* get_empty_json_array(void);
+TJSON_NODISCARD JsonArray* get_empty_json_array(void);
 
-NODISCARD tstr_static json_array_add_entry(JsonArray* json_array, JsonValue entry);
+TJSON_NODISCARD tstr_static json_array_add_entry(JsonArray* json_array, JsonValue entry);
 
 void free_json_array(JsonArray* json_arr);
 
-NODISCARD JsonObject* get_empty_json_object(void);
+TJSON_NODISCARD JsonObject* get_empty_json_object(void);
 
-NODISCARD tstr_static json_object_add_entry(JsonObject* json_object, JsonString** key_moved,
-                                            JsonValue value);
+TJSON_NODISCARD tstr_static json_object_add_entry(JsonObject* json_object, JsonString** key_moved,
+                                                  JsonValue value);
 
-NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* json_object, const tstr* key,
-                                                 JsonValue value);
+TJSON_NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* json_object, const tstr* key,
+                                                       JsonValue value);
 
-NODISCARD tstr_static json_object_add_entry_cstr(JsonObject* json_object, const char* key,
-                                                 JsonValue value);
+TJSON_NODISCARD tstr_static json_object_add_entry_cstr(JsonObject* json_object, const char* key,
+                                                       JsonValue value);
 
 void free_json_object(JsonObject* json_obj);
 
 // utility functions
 
-NODISCARD SourceLocation make_null_source_location(void);
+TJSON_NODISCARD SourceLocation make_null_source_location(void);
 
-NODISCARD bool is_null_source_location(SourceLocation location);
+TJSON_NODISCARD bool is_null_source_location(SourceLocation location);
 
-NODISCARD tstr json_format_source_location(SourceLocation location);
+TJSON_NODISCARD tstr json_format_source_location(SourceLocation location);
 
-NODISCARD tstr json_format_error(JsonError error);
+TJSON_NODISCARD tstr json_format_error(JsonError error);
 
 #ifdef __cplusplus
 }
