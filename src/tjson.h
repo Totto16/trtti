@@ -61,7 +61,7 @@
 
 // end of utils
 
-#include "json_variants.h"
+#include "./tjson/variants.h"
 
 #ifdef __cplusplus
 extern "C" {
