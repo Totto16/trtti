@@ -7,9 +7,13 @@
 #if _TJSON_COMPILE_WITH_NARROWED_ENUMS
 	#define TJSON_C_23_NARROW_ENUM_TO(x) : x
 	#define TJSON_C_23_ENUM_TYPE(x) x
+
+	#define VARIANT_IMPL_JSON_VARIANTS_COMPILED_WITH_NARROWED_ENUMS 1
 #else
 	#define TJSON_C_23_NARROW_ENUM_TO(x)
 	#define TJSON_C_23_ENUM_TYPE(x) int
+
+	#define VARIANT_IMPL_JSON_VARIANTS_COMPILED_WITH_NARROWED_ENUMS 0
 #endif
 
 #if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202000) || __cplusplus
@@ -21,14 +25,11 @@
 	#define TJSON_MAYBE_UNUSED __attribute__((__unused__))
 #endif
 
+#define TJSON_UNUSED(v) ((void)(v))
+
 // cool trick from here:
 // https://stackoverflow.com/questions/777261/avoiding-unused-variables-warnings-when-using-assert-in-a-release-build
 #ifdef NDEBUG
-	#define assert(x) /* NOLINT(readability-identifier-naming) */ \
-		do { \
-			UNUSED((x)); \
-		} while(false)
-
 	#define TJSON_UNREACHABLE() \
 		do { \
 			fprintf(stderr, "[%s %s:%d]: UNREACHABLE\n", __func__, __FILE__, __LINE__); \
@@ -101,11 +102,6 @@ typedef struct {
 	tstr_view data;
 } JsonStringSource;
 
-#define C_23_NARROW_ENUM_TO(x) TJSON_C_23_NARROW_ENUM_TO(x)
-#define NODISCARD TJSON_NODISCARD
-#define MAYBE_UNUSED TJSON_MAYBE_UNUSED
-#define UNREACHABLE() TJSON_UNREACHABLE()
-
 GENERATE_VARIANT_ALL_JSON_SOURCE()
 
 typedef struct {
@@ -125,11 +121,6 @@ GENERATE_VARIANT_ALL_JSON_VALUE()
 
 GENERATE_VARIANT_ALL_JSON_PARSE_RESULT()
 // GCOVR_EXCL_STOP
-
-#undef C_23_NARROW_ENUM_TO
-#undef NODISCARD
-#undef MAYBE_UNUSED
-#undef UNREACHABLE
 
 // parse json strings
 
