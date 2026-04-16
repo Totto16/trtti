@@ -37,6 +37,7 @@ if tjson_fallback_to_internal_variant_dep.found()
         version: meson.project_version(),
         compile_args: ['-D_TJSON_USE_VARIANT_IMPL=0']
     )
+    internal_c_args+= '-DTJSON_ALLOW_BOOTSTRAP=1'
 else
 
     c_variant_generator = find_program(
