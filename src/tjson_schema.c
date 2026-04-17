@@ -270,7 +270,36 @@ json_schema_to_string_number_impl(JsonSchemaState* const state) {
 TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_string_impl(const JsonSchemaString* const string,
                                   JsonSchemaState* const state) {
-	return NULL;
+	// see: https://json-schema.org/understanding-json-schema/reference/const
+	// and: https://json-schema.org/understanding-json-schema/reference/string
+
+	JsonObject* const root = get_empty_json_object();
+
+	ASSERT(root != NULL);
+
+	{
+		tstr_static insert_result = json_object_add_entry_cstr(
+		    root, "type", new_json_value_string(json_get_string_from_cstr("string")));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+	}
+
+	{ // handle props
+
+		UNUSED(string);
+
+		// TODO:handle props
+		tstr_static insert_result = json_object_add_entry_cstr(
+		    root, "PROPS", new_json_value_string(json_get_string_from_cstr("TODO")));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+	}
+
+	return json_schema_to_string_make_def_impl(root, state);
 }
 
 TJSON_NODISCARD static JsonSchemaAddResult
