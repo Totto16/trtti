@@ -9,11 +9,11 @@
 
 typedef struct {
 	bool required;
-} JsonSchemaOBjectEntryProperties;
+} JsonSchemaObjectEntryProperties;
 
 typedef struct {
 	JsonSchema schema;
-	JsonSchemaOBjectEntryProperties props;
+	JsonSchemaObjectEntryProperties props;
 } JsonObjectEntrySchema;
 
 /* NOLINTBEGIN(misc-use-internal-linkage,totto-function-passing-type,totto-const-correctness-c) */
@@ -175,7 +175,114 @@ json_schema_to_string_impl(const JsonSchema* const schema,
 TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_object_impl(const JsonSchemaObject* const object,
                                   JsonSchemaState* const state) {
-	return NULL;
+	// see: https://json-schema.org/understanding-json-schema/reference/object
+
+	JsonObject* const root = get_empty_json_object();
+
+	ASSERT(root != NULL);
+
+	{ // basic properties
+		tstr_static insert_result = json_object_add_entry_cstr(
+		    root, "type", new_json_value_string(json_get_string_from_cstr("object")));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+
+		insert_result = json_object_add_entry_cstr(
+		    root, "additionalProperties", new_json_value_boolean((JsonBoolean){ .value = false }));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+	}
+
+	// complicated properties
+
+	JsonObject* const properties_obj = get_empty_json_object();
+	ASSERT(properties_obj != NULL);
+
+	JsonArray* const required_arr = get_empty_json_array();
+	ASSERT(required_arr != NULL);
+
+	{
+
+		TMAP_TYPENAME_ITER(JsonObjectEntryMapImpl)
+		iter = TMAP_ITER_INIT(JsonObjectEntryMapImpl, &(object->map));
+
+		TMAP_TYPENAME_ENTRY(JsonObjectEntryMapImpl) value;
+
+		while(TMAP_ITER_NEXT(JsonObjectEntryMapImpl, &iter, &value)) {
+
+			const tstr key = value.key;
+
+			const JsonObjectEntrySchema obj_value = value.value;
+
+			const JsonSchemaAddResult add_result =
+			    json_schema_to_string_impl(&obj_value.schema, state);
+
+			if(add_result.is_error) {
+				return add_result;
+			}
+
+			const JsonDefId result_id = add_result.data.ok;
+
+			JsonObject* const entry_obj = get_empty_json_object();
+
+			{
+
+				const tstr schema_def_name = json_schema_impl_get_def_schema_name(result_id);
+
+				tstr_static insert_result = json_object_add_entry_cstr(
+				    entry_obj, "$ref",
+				    new_json_value_string(json_get_string_from_tstr(&schema_def_name)));
+
+				if(!tstr_static_is_null(insert_result)) {
+					return new_json_schema_add_result_error(insert_result);
+				}
+			}
+
+			tstr_static insert_result =
+			    json_object_add_entry_tstr(properties_obj, &key, new_json_value_object(entry_obj));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
+
+			if(obj_value.props.required) {
+				insert_result = json_array_add_entry(
+				    required_arr, new_json_value_string(json_get_string_from_tstr(&key)));
+
+				if(!tstr_static_is_null(insert_result)) {
+					return new_json_schema_add_result_error(insert_result);
+				}
+			}
+		}
+	}
+
+	{ // complicated properties
+
+		if(json_array_size(required_arr) > 0) {
+
+			tstr_static insert_result =
+			    json_object_add_entry_cstr(root, "required", new_json_value_array(required_arr));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
+		} else {
+			free_json_array(required_arr);
+		}
+
+		tstr_static insert_result =
+		    json_object_add_entry_cstr(root, "properties", new_json_value_object(properties_obj));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+	}
+
+	return json_schema_to_string_make_def_impl(root, state);
 }
 
 TJSON_NODISCARD static JsonSchemaAddResult
