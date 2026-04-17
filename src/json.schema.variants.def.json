@@ -30,21 +30,24 @@
             },
             {
                 "name": "Number",
-                "type": {
-                    "name": "JsonSchemaNumber"
-                }
+                "type": null
             },
             {
                 "name": "String",
                 "type": {
-                    "name": "JsonSchemaString*"
+                    "struct": {
+                        "members": [
+                            {
+                                "name": "str",
+                                "typeName": "JsonSchemaString*"
+                            }
+                        ]
+                    }
                 }
             },
             {
                 "name": "Boolean",
-                "type": {
-                    "name": "JsonSchemaBoolean"
-                }
+                "type": null
             },
             {
                 "name": "JsonSchemaNull",
@@ -53,13 +56,20 @@
             {
                 "name": "OneOf",
                 "type": {
-                    "name": "JsonOneOf*"
+                    "struct": {
+                        "members": [
+                            {
+                                "name": "one_of",
+                                "typeName": "JsonSchemaOneOf*"
+                            }
+                        ]
+                    }
                 }
             },
             {
                 "name": "Literal",
                 "type": {
-                    "name": "JsonLiteral*"
+                    "name": "JsonSchemaLiteral"
                 }
             }
         ],

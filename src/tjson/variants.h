@@ -1,5 +1,3 @@
-#pragma once
-
 #if !defined(_TJSON_USE_VARIANT_IMPL)
 	#error "'_TJSON_USE_VARIANT_IMPL' needs to be defined"
 #elif _TJSON_USE_VARIANT_IMPL == 1
