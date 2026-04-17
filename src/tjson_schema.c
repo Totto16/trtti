@@ -63,7 +63,7 @@ TVEC_DEFINE_AND_IMPLEMENT_VEC_TYPE(JsonSchema)
 typedef TVEC_TYPENAME(JsonSchema) JsonSchemaArrOfValuesImpl;
 
 struct JsonSchemaArrayImpl {
-	JsonSchemaArrOfValuesImpl values;
+	JsonSchema item;
 	JsonSchemaArrayProperties props;
 };
 
@@ -179,9 +179,71 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 }
 
 TJSON_NODISCARD static JsonSchemaAddResult
-json_schema_to_string_array_impl(const JsonSchemaArray* const object,
-                                 JsonSchemaState* const state) {
-	return NULL;
+json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaState* const state) {
+	// see: https://json-schema.org/understanding-json-schema/reference/array
+
+	JsonObject* const root = get_empty_json_object();
+
+	{
+		tstr_static insert_result = json_object_add_entry_cstr(
+		    root, "type", new_json_value_string(json_get_string_from_cstr("array")));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+	}
+
+	ASSERT(root != NULL);
+
+	{ // add items field
+
+		const JsonSchemaAddResult add_result = json_schema_to_string_impl(&(array->item), state);
+
+		if(add_result.is_error) {
+			return add_result;
+		}
+
+		const JsonDefId result_id = add_result.data.ok;
+
+		JsonObject* const entry_obj = get_empty_json_object();
+
+		{
+
+			const tstr schema_def_name = json_schema_impl_get_def_schema_name(result_id);
+
+			tstr_static insert_result = json_object_add_entry_cstr(
+			    entry_obj, "$ref",
+			    new_json_value_string(json_get_string_from_tstr(&schema_def_name)));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
+		}
+
+		tstr_static insert_result =
+		    json_object_add_entry_cstr(root, "items", new_json_value_object(entry_obj));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+	}
+
+	{ // handle props
+
+		// TODO:handle props
+		tstr_static insert_result = json_object_add_entry_cstr(
+		    root, "PROPS", new_json_value_string(json_get_string_from_cstr("TODO")));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+	}
+
+	return json_schema_to_string_make_def_impl(root, state);
 }
 
 TJSON_NODISCARD static JsonSchemaAddResult
