@@ -1,0 +1,76 @@
+[
+    {
+        "name": "JsonSchema",
+        "member": [
+            {
+                "name": "Object",
+                "type": {
+                    "struct": {
+                        "members": [
+                            {
+                                "name": "obj",
+                                "typeName": "JsonSchemaObject*"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "Array",
+                "type": {
+                    "struct": {
+                        "members": [
+                            {
+                                "name": "arr",
+                                "typeName": "JsonSchemaArray*"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "Number",
+                "type": {
+                    "name": "JsonSchemaNumber"
+                }
+            },
+            {
+                "name": "String",
+                "type": {
+                    "name": "JsonSchemaString*"
+                }
+            },
+            {
+                "name": "Boolean",
+                "type": {
+                    "name": "JsonSchemaBoolean"
+                }
+            },
+            {
+                "name": "JsonSchemaNull",
+                "type": null
+            },
+            {
+                "name": "OneOf",
+                "type": {
+                    "name": "JsonOneOf*"
+                }
+            },
+            {
+                "name": "Literal",
+                "type": {
+                    "name": "JsonLiteral*"
+                }
+            }
+        ],
+        "enum": {
+            "name": "JsonSchemaType",
+            "underlyingType": "u8"
+        },
+        "options": {
+            "requirements": {
+                "order": "best_size"
+            }
+        }
+    }
+]

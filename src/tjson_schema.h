@@ -1,0 +1,10 @@
+#pragma once
+
+#include "./tjson.h"
+
+#define VARIANT_IMPL_JSON_VARIANTS_COMPILED_WITH_NARROWED_ENUMS \
+	TJSON_VARIANT_IMPL_COMPILED_WITH_NARROWED_ENUMS
+
+#define _TJSON_IMPL_NEED_VARIANTS 3
+#include "./tjson/variants.h"
+#undef _TJSON_IMPL_NEED_VARIANTS
