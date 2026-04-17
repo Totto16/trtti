@@ -8,12 +8,8 @@
 #include <tstr_builder.h>
 
 typedef struct {
-	bool required;
-} JsonSchemaObjectEntryProperties;
-
-typedef struct {
 	JsonSchema schema;
-	JsonSchemaObjectEntryProperties props;
+	bool required;
 } JsonObjectEntrySchema;
 
 /* NOLINTBEGIN(misc-use-internal-linkage,totto-function-passing-type,totto-const-correctness-c) */
@@ -63,7 +59,7 @@ TVEC_DEFINE_AND_IMPLEMENT_VEC_TYPE(JsonSchema)
 typedef TVEC_TYPENAME(JsonSchema) JsonSchemaArrOfValuesImpl;
 
 struct JsonSchemaArrayImpl {
-	JsonSchema item;
+	JsonSchema items;
 	JsonSchemaArrayProperties props;
 };
 
@@ -177,7 +173,7 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
                                   JsonSchemaState* const state) {
 	// see: https://json-schema.org/understanding-json-schema/reference/object
 
-	JsonObject* const root = get_empty_json_object();
+	JsonObject* const root = json_object_get_empty();
 
 	ASSERT(root != NULL);
 
@@ -199,10 +195,10 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 
 	// complicated properties
 
-	JsonObject* const properties_obj = get_empty_json_object();
+	JsonObject* const properties_obj = json_object_get_empty();
 	ASSERT(properties_obj != NULL);
 
-	JsonArray* const required_arr = get_empty_json_array();
+	JsonArray* const required_arr = json_array_get_empty();
 	ASSERT(required_arr != NULL);
 
 	{
@@ -227,7 +223,7 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 
 			const JsonDefId result_id = add_result.data.ok;
 
-			JsonObject* const entry_obj = get_empty_json_object();
+			JsonObject* const entry_obj = json_object_get_empty();
 
 			{
 
@@ -249,7 +245,7 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 				return new_json_schema_add_result_error(insert_result);
 			}
 
-			if(obj_value.props.required) {
+			if(obj_value.required) {
 				insert_result = json_array_add_entry(
 				    required_arr, new_json_value_string(json_get_string_from_tstr(&key)));
 
@@ -289,7 +285,7 @@ TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaState* const state) {
 	// see: https://json-schema.org/understanding-json-schema/reference/array
 
-	JsonObject* const root = get_empty_json_object();
+	JsonObject* const root = json_object_get_empty();
 
 	{
 		tstr_static insert_result = json_object_add_entry_cstr(
@@ -304,7 +300,7 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaS
 
 	{ // add items field
 
-		const JsonSchemaAddResult add_result = json_schema_to_string_impl(&(array->item), state);
+		const JsonSchemaAddResult add_result = json_schema_to_string_impl(&(array->items), state);
 
 		if(add_result.is_error) {
 			return add_result;
@@ -312,7 +308,7 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaS
 
 		const JsonDefId result_id = add_result.data.ok;
 
-		JsonObject* const entry_obj = get_empty_json_object();
+		JsonObject* const entry_obj = json_object_get_empty();
 
 		{
 
@@ -358,7 +354,7 @@ json_schema_to_string_number_impl(JsonSchemaState* const state) {
 
 	// see: https://json-schema.org/understanding-json-schema/reference/numeric
 
-	JsonObject* const root = get_empty_json_object();
+	JsonObject* const root = json_object_get_empty();
 
 	ASSERT(root != NULL);
 
@@ -380,7 +376,7 @@ json_schema_to_string_string_impl(const JsonSchemaString* const string,
 	// see: https://json-schema.org/understanding-json-schema/reference/const
 	// and: https://json-schema.org/understanding-json-schema/reference/string
 
-	JsonObject* const root = get_empty_json_object();
+	JsonObject* const root = json_object_get_empty();
 
 	ASSERT(root != NULL);
 
@@ -413,7 +409,7 @@ TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_boolean_impl(JsonSchemaState* const state) {
 	// see: https://json-schema.org/understanding-json-schema/reference/boolean
 
-	JsonObject* const root = get_empty_json_object();
+	JsonObject* const root = json_object_get_empty();
 
 	ASSERT(root != NULL);
 
@@ -433,7 +429,7 @@ TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_null_impl(JsonSchemaState* const state) {
 	// see: https://json-schema.org/understanding-json-schema/reference/null
 
-	JsonObject* const root = get_empty_json_object();
+	JsonObject* const root = json_object_get_empty();
 
 	ASSERT(root != NULL);
 
@@ -454,11 +450,11 @@ json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
                                   JsonSchemaState* const state) {
 	// see: https://json-schema.org/understanding-json-schema/reference/combining#oneOf
 
-	JsonObject* const root = get_empty_json_object();
+	JsonObject* const root = json_object_get_empty();
 
 	ASSERT(root != NULL);
 
-	JsonArray* one_of_arr = get_empty_json_array();
+	JsonArray* one_of_arr = json_array_get_empty();
 
 	ASSERT(one_of_arr != NULL);
 
@@ -475,7 +471,7 @@ json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
 
 			const JsonDefId result_id = add_result.data.ok;
 
-			JsonObject* const entry_obj = get_empty_json_object();
+			JsonObject* const entry_obj = json_object_get_empty();
 
 			{
 
@@ -517,7 +513,7 @@ json_schema_to_string_literal_impl(const JsonSchemaLiteral* const literal,
 	// see: https://json-schema.org/understanding-json-schema/reference/const
 	// and: https://json-schema.org/understanding-json-schema/reference/string
 
-	JsonObject* const root = get_empty_json_object();
+	JsonObject* const root = json_object_get_empty();
 
 	ASSERT(root != NULL);
 
@@ -614,7 +610,7 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 
 	const JsonDefId root_id = root_res.data.ok;
 
-	JsonObject* const root = get_empty_json_object();
+	JsonObject* const root = json_object_get_empty();
 
 	{
 		tstr_static insert_result =
@@ -674,7 +670,7 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 
 		{ // add the defiunions
 
-			JsonObject* const defs = get_empty_json_object();
+			JsonObject* const defs = json_object_get_empty();
 
 			TMAP_TYPENAME_ITER(JsonDefEntryMapImpl)
 			iter = TMAP_ITER_INIT(JsonDefEntryMapImpl, &(state.defs));

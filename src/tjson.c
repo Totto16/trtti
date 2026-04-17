@@ -89,18 +89,18 @@ static bool json_parse_impl_is_ws(const LibCChar value) {
 	}
 }
 
-static void source_position_location_process_new_line(SourceLocation* const loc) {
+static void source_position_location_process_new_line(JsonSourceLocation* const loc) {
 	loc->pos.line++;
 	loc->pos.col = 0;
 }
 
-static void source_position_location_advance_col_by(SourceLocation* const loc, size_t amount) {
+static void source_position_location_advance_col_by(JsonSourceLocation* const loc, size_t amount) {
 	loc->pos.col += amount;
 }
 
 typedef struct {
 	tstr_view view;
-	SourceLocation loc;
+	JsonSourceLocation loc;
 } JsonParseState;
 
 NODISCARD static bool json_parse_state_is_eof(const JsonParseState state) {
@@ -167,12 +167,13 @@ static void json_parse_impl_skip_ws(JsonParseState* const state) {
 	json_parse_state_skip_by(state, offset, false);
 }
 
-NODISCARD SourceLocation make_null_source_location(void) {
-	return (SourceLocation){ .source = new_json_source_file((JsonFileSource){ .file_path = NULL }),
-		                     .pos = (SourcePosition){ .line = 0, .col = 0 } };
+NODISCARD JsonSourceLocation json_source_location_get_null(void) {
+	return (JsonSourceLocation){ .source =
+		                             new_json_source_file((JsonFileSource){ .file_path = NULL }),
+		                         .pos = (JsonSourcePosition){ .line = 0, .col = 0 } };
 }
 
-NODISCARD bool is_null_source_location(SourceLocation location) {
+NODISCARD bool json_source_location_is_null(JsonSourceLocation location) {
 	SWITCH_JSON_SOURCE(location.source) {
 		CASE_JSON_SOURCE_IS_FILE_CONST(location.source) {
 			return file.file_path == NULL;
@@ -188,7 +189,8 @@ NODISCARD bool is_null_source_location(SourceLocation location) {
 	}
 }
 
-NODISCARD static JsonError make_json_error_at(const SourceLocation loc, const tstr_static message) {
+NODISCARD static JsonError make_json_error_at(const JsonSourceLocation loc,
+                                              const tstr_static message) {
 	return (JsonError){ .message = message, .loc = loc };
 }
 
@@ -240,7 +242,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_null(JsonParseState* cons
 	return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("not null")));
 }
 
-NODISCARD JsonObject* get_empty_json_object(void) {
+NODISCARD JsonObject* json_object_get_empty(void) {
 	JsonObject* const object = malloc(sizeof(JsonObject));
 
 	if(object == NULL) {
@@ -350,7 +352,7 @@ NODISCARD tstr_static json_object_add_entry_cstr(JsonObject* json_object, const 
 	return json_object_add_entry(json_object, &key_string, value);
 }
 
-NODISCARD static inline JsonError json_error_none(const SourceLocation loc) {
+NODISCARD static inline JsonError json_error_none(const JsonSourceLocation loc) {
 	return (JsonError){ .message = tstr_static_null(), .loc = loc };
 }
 
@@ -522,7 +524,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 
 		json_parse_impl_skip_ws(state);
 
-		JsonObject* const object = get_empty_json_object();
+		JsonObject* const object = json_object_get_empty();
 
 		if(object == NULL) {
 			return new_json_parse_result_error(
@@ -532,7 +534,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 		return new_json_parse_result_ok(new_json_value_object(object));
 	}
 
-	JsonObject* const object = get_empty_json_object();
+	JsonObject* const object = json_object_get_empty();
 
 	if(object == NULL) {
 		return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
@@ -602,7 +604,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 
 #undef FREE_AT_END
 
-NODISCARD JsonArray* get_empty_json_array(void) {
+NODISCARD JsonArray* json_array_get_empty(void) {
 	JsonArray* const array = malloc(sizeof(JsonArray));
 
 	if(array == NULL) {
@@ -719,7 +721,7 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 
 		json_parse_impl_skip_ws(state);
 
-		JsonArray* const array = get_empty_json_array();
+		JsonArray* const array = json_array_get_empty();
 
 		if(array == NULL) {
 			return new_json_parse_result_error(
@@ -729,7 +731,7 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 		return new_json_parse_result_ok(new_json_value_array(array));
 	}
 
-	JsonArray* const array = get_empty_json_array();
+	JsonArray* const array = json_array_get_empty();
 
 	if(array == NULL) {
 		return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
@@ -1570,9 +1572,9 @@ NODISCARD static JsonParseResult json_value_parse_from_str_impl(const JsonParseS
 NODISCARD JsonParseResult json_value_parse_from_str(const tstr_view data) {
 	const JsonParseState state = {
 		.view = data,
-		.loc =
-		    (SourceLocation){ .source = new_json_source_string((JsonStringSource){ .data = data }),
-		                      .pos = (SourcePosition){ .line = 0, .col = 0 } }
+		.loc = (JsonSourceLocation){ .source =
+		                                 new_json_source_string((JsonStringSource){ .data = data }),
+		                             .pos = (JsonSourcePosition){ .line = 0, .col = 0 } }
 	};
 
 	return json_value_parse_from_str_impl(state);
@@ -1584,7 +1586,7 @@ NODISCARD JsonParseResult json_value_parse_from_file(const tstr* const file_path
 
 	if(file_result.is_error) {
 		return new_json_parse_result_error(
-		    make_json_error_at(make_null_source_location(), file_result.data.error));
+		    make_json_error_at(json_source_location_get_null(), file_result.data.error));
 	}
 
 	assert(!file_result.is_error);
@@ -1593,10 +1595,10 @@ NODISCARD JsonParseResult json_value_parse_from_file(const tstr* const file_path
 	const tstr_view str_view = tstr_as_view(&file);
 
 	const JsonParseState state = { .view = str_view,
-		                           .loc = (SourceLocation){
+		                           .loc = (JsonSourceLocation){
 		                               .source = new_json_source_file(
 		                                   (JsonFileSource){ .file_path = file_path }),
-		                               .pos = (SourcePosition){ .line = 0, .col = 0 } } };
+		                               .pos = (JsonSourcePosition){ .line = 0, .col = 0 } } };
 
 	return json_value_parse_from_str_impl(state);
 }
@@ -2249,9 +2251,9 @@ NODISCARD JsonString* json_get_string_from_tstr_view(tstr_view str_view) {
 #undef FREE_AT_END
 
 static void json_format_source_location_impl(StringBuilder* const string_builder,
-                                             const SourceLocation location) {
+                                             const JsonSourceLocation location) {
 
-	if(is_null_source_location(location)) {
+	if(json_source_location_is_null(location)) {
 		string_builder_append_single(string_builder, "<Nowhere>");
 		return;
 	}
@@ -2280,7 +2282,7 @@ static void json_format_source_location_impl(StringBuilder* const string_builder
 	}
 }
 
-NODISCARD tstr json_format_source_location(const SourceLocation location) {
+NODISCARD tstr json_format_source_location(const JsonSourceLocation location) {
 	StringBuilder* string_builder = string_builder_init();
 
 	json_format_source_location_impl(string_builder, location);

@@ -90,7 +90,7 @@ typedef struct {
 typedef struct {
 	size_t line;
 	size_t col;
-} SourcePosition;
+} JsonSourcePosition;
 
 typedef struct {
 	// NOTE: this "references" the original file path data, it can be freed, as this is passed by
@@ -110,14 +110,14 @@ GENERATE_VARIANT_ALL_JSON_SOURCE()
 
 typedef struct {
 	JsonSource source;
-	SourcePosition pos;
-} SourceLocation;
+	JsonSourcePosition pos;
+} JsonSourceLocation;
 
 typedef struct {
 	tstr_static message;
 	// note: this has references to the original passed in data, either a tstr file_path or  the
 	// tstr_view of the passed ins tring, so it is only valid, until the user freed that data
-	SourceLocation loc;
+	JsonSourceLocation loc;
 } JsonError;
 
 // GCOVR_EXCL_START (external library)
@@ -184,13 +184,13 @@ TJSON_NODISCARD JsonString* json_get_string_from_tstr_view(tstr_view str_view);
 
 void free_json_string(JsonString* json_string);
 
-TJSON_NODISCARD JsonArray* get_empty_json_array(void);
+TJSON_NODISCARD JsonArray* json_array_get_empty(void);
 
 TJSON_NODISCARD tstr_static json_array_add_entry(JsonArray* json_array, JsonValue entry);
 
 void free_json_array(JsonArray* json_arr);
 
-TJSON_NODISCARD JsonObject* get_empty_json_object(void);
+TJSON_NODISCARD JsonObject* json_object_get_empty(void);
 
 TJSON_NODISCARD tstr_static json_object_add_entry(JsonObject* json_object, JsonString** key_moved,
                                                   JsonValue value);
@@ -208,11 +208,11 @@ void free_json_object(JsonObject* json_obj);
 
 // utility functions
 
-TJSON_NODISCARD SourceLocation make_null_source_location(void);
+TJSON_NODISCARD JsonSourceLocation json_source_location_get_null(void);
 
-TJSON_NODISCARD bool is_null_source_location(SourceLocation location);
+TJSON_NODISCARD bool json_source_location_is_null(JsonSourceLocation location);
 
-TJSON_NODISCARD tstr json_format_source_location(SourceLocation location);
+TJSON_NODISCARD tstr json_format_source_location(JsonSourceLocation location);
 
 TJSON_NODISCARD tstr json_format_error(JsonError error);
 

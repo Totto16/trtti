@@ -24,3 +24,30 @@ typedef struct JsonSchemaOneOfImpl JsonSchemaOneOf;
 GENERATE_VARIANT_ALL_JSON_SCHEMA()
 
 TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* schema);
+
+TJSON_NODISCARD JsonSchemaObject* json_schema_object_get_empty(void);
+
+TJSON_NODISCARD tstr_static json_schema_object_add_entry(JsonSchemaObject* json_schema_object,
+                                                         tstr** moved_key, JsonSchema value,
+                                                         bool required);
+
+TJSON_NODISCARD tstr_static json_schema_object_add_entry_dup(JsonSchemaObject* json_schema_object,
+                                                             const tstr* key, JsonSchema value,
+                                                             bool required);
+
+void free_json_schema_object(JsonSchemaObject* json_schema_object);
+
+TJSON_NODISCARD JsonSchemaArray* json_schema_array_get(JsonSchema items);
+
+void free_json_schema_array(JsonSchemaArray* json_schema_arr);
+
+TJSON_NODISCARD JsonSchemaString* json_schema_string_get(void);
+
+void free_json_schema_string(JsonSchemaString* json_schema_string);
+
+TJSON_NODISCARD JsonSchemaOneOf* json_schema_one_of_get_empty(void);
+
+TJSON_NODISCARD tstr_static json_schema_one_of_add_entry(JsonSchemaOneOf* json_schema_one_of,
+                                                         JsonSchema schema);
+
+void free_json_schema_one_of(JsonSchemaOneOf* json_schema_one_of);
