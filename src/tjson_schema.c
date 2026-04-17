@@ -123,9 +123,33 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const object,
 	return NULL;
 }
 
+TJSON_NODISCARD static JsonObject* json_schema_to_string_number_impl(void) {
+	return NULL;
+}
+
 TJSON_NODISCARD static JsonObject*
-json_schema_to_string_object_impl(const JsonSchemaObject* const object,
+json_schema_to_string_string_impl(const JsonSchemaString* const string,
                                   const JsonSchemaOptions options, JsonSchemaState* const state) {
+	return NULL;
+}
+
+TJSON_NODISCARD static JsonObject* json_schema_to_string_boolean_impl() {
+	return NULL;
+}
+
+TJSON_NODISCARD static JsonObject* json_schema_to_string_null_impl() {
+	return NULL;
+}
+
+TJSON_NODISCARD static JsonObject*
+json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
+                                  const JsonSchemaOptions options, JsonSchemaState* const state) {
+	return NULL;
+}
+
+TJSON_NODISCARD static JsonObject*
+json_schema_to_string_literal_impl(const JsonSchemaLiteral* const literal,
+                                   const JsonSchemaOptions options, JsonSchemaState* const state) {
 	return NULL;
 }
 
@@ -173,32 +197,32 @@ TJSON_NODISCARD static JsonObject* json_schema_to_string_impl(const JsonSchema* 
 		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_NUMBER() {
-			result = json_schema_to_string_number_impl(number, options);
+			result = json_schema_to_string_number_impl();
 		}
 		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_STRING_CONST(*schema) {
-			result = json_schema_to_string_string_impl(string, options);
+			result = json_schema_to_string_string_impl(string.str, options, state);
 		}
 		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_BOOLEAN() {
-			result = json_schema_to_string_boolean_impl(boolean, options);
+			result = json_schema_to_string_boolean_impl();
 		}
 		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_NULL() {
-			result = json_schema_to_string_null_impl(options);
+			result = json_schema_to_string_null_impl();
 		}
 		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_ONE_OF_CONST(*schema) {
-			result = json_schema_to_string_one_of_impl(options);
+			result = json_schema_to_string_one_of_impl(one_of.one_of, options, state);
 		}
 		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_LITERAL_CONST(*schema) {
-			result = json_schema_to_string_literal_impl(options);
+			result = json_schema_to_string_literal_impl(literal.lit, options, state);
 		}
 		break;
 		VARIANT_CASE_END();

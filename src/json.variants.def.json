@@ -183,7 +183,14 @@
             {
                 "name": "Literal",
                 "type": {
-                    "name": "JsonSchemaLiteral"
+                    "struct": {
+                        "members": [
+                            {
+                                "name": "lit",
+                                "typeName": "JsonSchemaLiteral*"
+                            }
+                        ]
+                    }
                 }
             }
         ],
