@@ -51,3 +51,5 @@ TJSON_NODISCARD tstr_static json_schema_one_of_add_entry(JsonSchemaOneOf* json_s
                                                          JsonSchema schema);
 
 void free_json_schema_one_of(JsonSchemaOneOf* json_schema_one_of);
+
+void free_json_schema(JsonSchema* json_schema);

@@ -195,24 +195,24 @@
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_ \
-	json_value_get_as_object(JsonValue const variant_entry) { \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_ \
+	    json_value_get_as_object(JsonValue const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry._variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeObject); \
 		return variant_entry._variant_data_for_json_value_data_member.object; \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_* \
-	json_value_get_as_object_mut_ref(JsonValue* const variant_entry) { \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_* \
+	    json_value_get_as_object_mut_ref(JsonValue* const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry->_variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeObject); \
 		return &(variant_entry->_variant_data_for_json_value_data_member.object); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_* \
-	json_value_get_as_object_const_ref(const JsonValue* const variant_entry) { \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_* \
+	    json_value_get_as_object_const_ref(const JsonValue* const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry->_variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeObject); \
 		return &(variant_entry->_variant_data_for_json_value_data_member.object); \
@@ -231,24 +231,24 @@
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_ \
-	json_value_get_as_array(JsonValue const variant_entry) { \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_ \
+	    json_value_get_as_array(JsonValue const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry._variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeArray); \
 		return variant_entry._variant_data_for_json_value_data_member.array; \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_* \
-	json_value_get_as_array_mut_ref(JsonValue* const variant_entry) { \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_* \
+	    json_value_get_as_array_mut_ref(JsonValue* const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry->_variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeArray); \
 		return &(variant_entry->_variant_data_for_json_value_data_member.array); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_* \
-	json_value_get_as_array_const_ref(const JsonValue* const variant_entry) { \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_* \
+	    json_value_get_as_array_const_ref(const JsonValue* const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry->_variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeArray); \
 		return &(variant_entry->_variant_data_for_json_value_data_member.array); \
@@ -1567,4 +1567,852 @@ _Pragma ("GCC poison _variant_tag_for_json_parse_result_tag_member _variant_data
 
     // clang-format off
 _Pragma ("GCC poison _variant_tag_for_json_source_tag_member _variant_data_for_json_source_data_member _for_macro_trick_for_if_expr_impl_once_variant_json_source_variant_impl _for_macro_trick_for_case_expr_impl_once_variant_json_source_variant_impl _AnonymousUnionForVariantJsonSourceImpl_DONT_USE AssertTypeImplForJsonSourceImpl_1_DONT_USE_ AssertTypeImplForJsonSourceImpl_2_DONT_USE_")
+// clang-format on
+
+#define VARIANT_JSON_SCHEMA_STATE_ASSERT(state, expected_state) \
+	VARIANT_STATE_ASSERT(state, expected_state, json_schema, "JsonSchema")
+
+#define GENERATE_VARIANT_ENUM_JSON_SCHEMA() \
+	/* @enum value */ \
+	typedef enum _IMPL_JSON_VARIANTS_C_23_NARROW_ENUM_TO(uint8_t) { \
+		JsonSchemaTypeObject = 0, \
+		JsonSchemaTypeArray, \
+		JsonSchemaTypeNumber, \
+		JsonSchemaTypeString, \
+		JsonSchemaTypeBoolean, \
+		JsonSchemaTypeNull, \
+		JsonSchemaTypeOneOf, \
+		JsonSchemaTypeLiteral \
+	} JsonSchemaType;
+
+#define GENERATE_VARIANT_CORE_JSON_SCHEMA() \
+	__INTERNAL_VARIANT_DECLARATION_START_IMPL_() \
+	typedef struct { \
+		JsonSchemaObject* obj; \
+	} _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_; \
+\
+	typedef struct { \
+		JsonSchemaArray* arr; \
+	} _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_; \
+\
+	typedef struct { \
+		JsonSchemaString* str; \
+	} _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_; \
+\
+	typedef struct { \
+		JsonSchemaOneOf* one_of; \
+	} _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_; \
+\
+	typedef struct { \
+		JsonSchemaLiteral* lit; \
+	} _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_; \
+\
+	/* raw union for variant */ \
+	typedef union { \
+		_variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_ object; \
+		_variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_ array; \
+		_variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_ string; \
+		_variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_ one_of; \
+		_variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_ literal; \
+	} _AnonymousUnionForVariantJsonSchemaImpl_DONT_USE; \
+\
+	/* tagged union (variant) implementation */ \
+	typedef struct { \
+		JsonSchemaType _variant_tag_for_json_schema_tag_member; \
+		_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE \
+		    _variant_data_for_json_schema_data_member; \
+	} JsonSchema; \
+	typedef struct { \
+		JsonSchemaType _variant_tag_for_json_schema_tag_member; \
+		_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE \
+		    _variant_data_for_json_schema_data_member; \
+	} AssertTypeImplForJsonSchemaImpl_1_DONT_USE_; \
+	typedef struct { \
+		_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE \
+		    _variant_data_for_json_schema_data_member; \
+		JsonSchemaType _variant_tag_for_json_schema_tag_member; \
+	} AssertTypeImplForJsonSchemaImpl_2_DONT_USE_; \
+	static_assert(sizeof(AssertTypeImplForJsonSchemaImpl_1_DONT_USE_) <= \
+	                  sizeof(AssertTypeImplForJsonSchemaImpl_2_DONT_USE_), \
+	              "Size for variant JsonSchema not smaller as the inverted order, current order: " \
+	              "tag is first"); \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline tstr_static \
+	_impl_get_state_string_for_variant_json_schema(JsonSchemaType const enum_value) { \
+		_Pragma("GCC diagnostic push") \
+		    _Pragma("GCC diagnostic ignored \"-Wswitch-bool\"") /* FOR GCC */ \
+		    switch(enum_value) { \
+		_Pragma("GCC diagnostic pop") case JsonSchemaTypeObject: { \
+			return TSTR_STATIC_LIT("object"); \
+		} \
+		case JsonSchemaTypeArray: { \
+			return TSTR_STATIC_LIT("array"); \
+		} \
+		case JsonSchemaTypeNumber: { \
+			return TSTR_STATIC_LIT("number"); \
+		} \
+		case JsonSchemaTypeString: { \
+			return TSTR_STATIC_LIT("string"); \
+		} \
+		case JsonSchemaTypeBoolean: { \
+			return TSTR_STATIC_LIT("boolean"); \
+		} \
+		case JsonSchemaTypeNull: { \
+			return TSTR_STATIC_LIT("null"); \
+		} \
+		case JsonSchemaTypeOneOf: { \
+			return TSTR_STATIC_LIT("one_of"); \
+		} \
+		case JsonSchemaTypeLiteral: { \
+			return TSTR_STATIC_LIT("literal"); \
+		} \
+		default: { \
+			return TSTR_STATIC_LIT("<unknown>"); \
+		} \
+		} \
+	} \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchemaType \
+	get_current_tag_type_for_json_schema(JsonSchema const variant_entry) { \
+		return variant_entry._variant_tag_for_json_schema_tag_member; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
+	new_json_schema_object(JsonSchemaObject* const obj) { \
+		return (JsonSchema){ \
+			._variant_tag_for_json_schema_tag_member = JsonSchemaTypeObject, \
+			._variant_data_for_json_schema_data_member = \
+			    (_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE){ \
+			        .object = \
+			            (_variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_){ \
+			                .obj = obj } } \
+		}; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_ \
+	    json_schema_get_as_object(JsonSchema const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeObject); \
+		return variant_entry._variant_data_for_json_schema_data_member.object; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_* \
+	    json_schema_get_as_object_mut_ref(JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeObject); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.object); \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_* \
+	    json_schema_get_as_object_const_ref(const JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeObject); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.object); \
+	} \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
+	new_json_schema_array(JsonSchemaArray* const arr) { \
+		return (JsonSchema){ \
+			._variant_tag_for_json_schema_tag_member = JsonSchemaTypeArray, \
+			._variant_data_for_json_schema_data_member = \
+			    (_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE){ \
+			        .array = \
+			            (_variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_){ \
+			                .arr = arr } } \
+		}; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_ \
+	    json_schema_get_as_array(JsonSchema const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeArray); \
+		return variant_entry._variant_data_for_json_schema_data_member.array; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_* \
+	    json_schema_get_as_array_mut_ref(JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeArray); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.array); \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_* \
+	    json_schema_get_as_array_const_ref(const JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeArray); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.array); \
+	} \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
+	new_json_schema_number(void) { \
+		return (JsonSchema){ ._variant_tag_for_json_schema_tag_member = JsonSchemaTypeNumber, \
+			                 ._variant_data_for_json_schema_data_member = \
+			                     (_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE){} }; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
+	new_json_schema_string(JsonSchemaString* const str) { \
+		return (JsonSchema){ \
+			._variant_tag_for_json_schema_tag_member = JsonSchemaTypeString, \
+			._variant_data_for_json_schema_data_member = \
+			    (_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE){ \
+			        .string = \
+			            (_variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_){ \
+			                .str = str } } \
+		}; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_ \
+	    json_schema_get_as_string(JsonSchema const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeString); \
+		return variant_entry._variant_data_for_json_schema_data_member.string; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_* \
+	    json_schema_get_as_string_mut_ref(JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeString); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.string); \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_* \
+	    json_schema_get_as_string_const_ref(const JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeString); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.string); \
+	} \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
+	new_json_schema_boolean(void) { \
+		return (JsonSchema){ ._variant_tag_for_json_schema_tag_member = JsonSchemaTypeBoolean, \
+			                 ._variant_data_for_json_schema_data_member = \
+			                     (_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE){} }; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
+	new_json_schema_null(void) { \
+		return (JsonSchema){ ._variant_tag_for_json_schema_tag_member = JsonSchemaTypeNull, \
+			                 ._variant_data_for_json_schema_data_member = \
+			                     (_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE){} }; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
+	new_json_schema_one_of(JsonSchemaOneOf* const one_of) { \
+		return (JsonSchema){ \
+			._variant_tag_for_json_schema_tag_member = JsonSchemaTypeOneOf, \
+			._variant_data_for_json_schema_data_member = \
+			    (_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE){ \
+			        .one_of = \
+			            (_variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_){ \
+			                .one_of = one_of } } \
+		}; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_ \
+	    json_schema_get_as_one_of(JsonSchema const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeOneOf); \
+		return variant_entry._variant_data_for_json_schema_data_member.one_of; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_* \
+	    json_schema_get_as_one_of_mut_ref(JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeOneOf); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.one_of); \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_* \
+	    json_schema_get_as_one_of_const_ref(const JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeOneOf); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.one_of); \
+	} \
+\
+	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
+	new_json_schema_literal(JsonSchemaLiteral* const lit) { \
+		return (JsonSchema){ \
+			._variant_tag_for_json_schema_tag_member = JsonSchemaTypeLiteral, \
+			._variant_data_for_json_schema_data_member = \
+			    (_AnonymousUnionForVariantJsonSchemaImpl_DONT_USE){ \
+			        .literal = \
+			            (_variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_){ \
+			                .lit = lit } } \
+		}; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_ \
+	    json_schema_get_as_literal(JsonSchema const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeLiteral); \
+		return variant_entry._variant_data_for_json_schema_data_member.literal; \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_* \
+	    json_schema_get_as_literal_mut_ref(JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeLiteral); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.literal); \
+	} \
+\
+	JSON_VARIANTS_NODISCARD \
+	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_* \
+	    json_schema_get_as_literal_const_ref(const JsonSchema* const variant_entry) { \
+		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
+		                                 JsonSchemaTypeLiteral); \
+		return &(variant_entry->_variant_data_for_json_schema_data_member.literal); \
+	} \
+\
+	_Pragma("GCC poison _impl_get_state_string_for_variant_json_schema") \
+	    __INTERNAL_VARIANT_DECLARATION_END_IMPL_()
+
+#define GENERATE_VARIANT_ALL_JSON_SCHEMA() \
+	GENERATE_VARIANT_ENUM_JSON_SCHEMA() \
+	GENERATE_VARIANT_CORE_JSON_SCHEMA()
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_2(variant_entry, object)
+
+#define IF_JSON_SCHEMA_IS_OBJECT_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_2(variant_entry, \
+                                                                               var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeObject) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.object; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_MUT_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_2(variant_entry, object)
+
+#define IF_JSON_SCHEMA_IS_OBJECT_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_2(variant_entry, \
+                                                                             var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeObject) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.object; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define IF_JSON_SCHEMA_IS_OBJECT_IGN(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeObject)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_2(variant_entry, array)
+
+#define IF_JSON_SCHEMA_IS_ARRAY_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_2(variant_entry, \
+                                                                              var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeArray) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.array; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_MUT_MACRO_HELPER_IMPL_(_1, _2, \
+                                                                                        NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_2(variant_entry, array)
+
+#define IF_JSON_SCHEMA_IS_ARRAY_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_2(variant_entry, \
+                                                                            var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeArray) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.array; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define IF_JSON_SCHEMA_IS_ARRAY_IGN(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeArray)
+
+#define IF_JSON_SCHEMA_IS_NUMBER(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeNumber)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_CONST_IMPL_2(variant_entry, string)
+
+#define IF_JSON_SCHEMA_IS_STRING_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_CONST_IMPL_2(variant_entry, \
+                                                                               var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeString) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.string; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_MUT_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_MUT_IMPL_2(variant_entry, string)
+
+#define IF_JSON_SCHEMA_IS_STRING_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_STRING_MUT_IMPL_2(variant_entry, \
+                                                                             var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeString) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.string; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define IF_JSON_SCHEMA_IS_STRING_IGN(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeString)
+
+#define IF_JSON_SCHEMA_IS_BOOLEAN(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeBoolean)
+
+#define IF_JSON_SCHEMA_IS_NULL(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeNull)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_2(variant_entry, one_of)
+
+#define IF_JSON_SCHEMA_IS_ONE_OF_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_2(variant_entry, \
+                                                                               var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeOneOf) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.one_of; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_MUT_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_2(variant_entry, one_of)
+
+#define IF_JSON_SCHEMA_IS_ONE_OF_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_2(variant_entry, \
+                                                                             var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeOneOf) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.one_of; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define IF_JSON_SCHEMA_IS_ONE_OF_IGN(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeOneOf)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_2(variant_entry, literal)
+
+#define IF_JSON_SCHEMA_IS_LITERAL_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_2(variant_entry, \
+                                                                                var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeLiteral) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.literal; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_MUT_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_2(variant_entry, literal)
+
+#define IF_JSON_SCHEMA_IS_LITERAL_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_IF_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_2(variant_entry, \
+                                                                              var_name) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeLiteral) \
+		for(bool _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.literal; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define IF_JSON_SCHEMA_IS_LITERAL_IGN(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member == JsonSchemaTypeLiteral)
+
+#define IF_JSON_SCHEMA_IS_NOT_OBJECT(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member != JsonSchemaTypeObject)
+
+#define IF_JSON_SCHEMA_IS_NOT_ARRAY(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member != JsonSchemaTypeArray)
+
+#define IF_JSON_SCHEMA_IS_NOT_NUMBER(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member != JsonSchemaTypeNumber)
+
+#define IF_JSON_SCHEMA_IS_NOT_STRING(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member != JsonSchemaTypeString)
+
+#define IF_JSON_SCHEMA_IS_NOT_BOOLEAN(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member != JsonSchemaTypeBoolean)
+
+#define IF_JSON_SCHEMA_IS_NOT_NULL(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member != JsonSchemaTypeNull)
+
+#define IF_JSON_SCHEMA_IS_NOT_ONE_OF(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member != JsonSchemaTypeOneOf)
+
+#define IF_JSON_SCHEMA_IS_NOT_LITERAL(variant_entry) \
+	if((variant_entry)._variant_tag_for_json_schema_tag_member != JsonSchemaTypeLiteral)
+
+#define SWITCH_JSON_SCHEMA(variant_entry) \
+	switch((variant_entry)._variant_tag_for_json_schema_tag_member)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_2(variant_entry, object)
+
+#define CASE_JSON_SCHEMA_IS_OBJECT_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_CONST_IMPL_2(variant_entry, \
+                                                                                 var_name) \
+	case JsonSchemaTypeObject: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.object; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_MUT_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_2(variant_entry, object)
+
+#define CASE_JSON_SCHEMA_IS_OBJECT_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_OBJECT_MUT_IMPL_2(variant_entry, \
+                                                                               var_name) \
+	case JsonSchemaTypeObject: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.object; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define CASE_JSON_SCHEMA_IS_OBJECT_IGN() case JsonSchemaTypeObject:
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_2(variant_entry, array)
+
+#define CASE_JSON_SCHEMA_IS_ARRAY_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_CONST_IMPL_2(variant_entry, \
+                                                                                var_name) \
+	case JsonSchemaTypeArray: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.array; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_MUT_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_2(variant_entry, array)
+
+#define CASE_JSON_SCHEMA_IS_ARRAY_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ARRAY_MUT_IMPL_2(variant_entry, \
+                                                                              var_name) \
+	case JsonSchemaTypeArray: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.array; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define CASE_JSON_SCHEMA_IS_ARRAY_IGN() case JsonSchemaTypeArray:
+
+#define CASE_JSON_SCHEMA_IS_NUMBER() case JsonSchemaTypeNumber:
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_CONST_IMPL_2(variant_entry, string)
+
+#define CASE_JSON_SCHEMA_IS_STRING_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_CONST_IMPL_2(variant_entry, \
+                                                                                 var_name) \
+	case JsonSchemaTypeString: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.string; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_MUT_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_MUT_IMPL_2(variant_entry, string)
+
+#define CASE_JSON_SCHEMA_IS_STRING_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_STRING_MUT_IMPL_2(variant_entry, \
+                                                                               var_name) \
+	case JsonSchemaTypeString: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.string; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define CASE_JSON_SCHEMA_IS_STRING_IGN() case JsonSchemaTypeString:
+
+#define CASE_JSON_SCHEMA_IS_BOOLEAN() case JsonSchemaTypeBoolean:
+
+#define CASE_JSON_SCHEMA_IS_NULL() case JsonSchemaTypeNull:
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_2(variant_entry, one_of)
+
+#define CASE_JSON_SCHEMA_IS_ONE_OF_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_CONST_IMPL_2(variant_entry, \
+                                                                                 var_name) \
+	case JsonSchemaTypeOneOf: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.one_of; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_MUT_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_2(variant_entry, one_of)
+
+#define CASE_JSON_SCHEMA_IS_ONE_OF_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_ONE_OF_MUT_IMPL_2(variant_entry, \
+                                                                               var_name) \
+	case JsonSchemaTypeOneOf: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.one_of; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define CASE_JSON_SCHEMA_IS_ONE_OF_IGN() case JsonSchemaTypeOneOf:
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_CONST_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_2(variant_entry, \
+	                                                                          literal)
+
+#define CASE_JSON_SCHEMA_IS_LITERAL_CONST(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_CONST_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_CONST_IMPL_2(variant_entry, \
+                                                                                  var_name) \
+	case JsonSchemaTypeLiteral: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_ const \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.literal; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_MUT_MACRO_HELPER_IMPL_( \
+    _1, _2, NAME, ...) \
+	NAME
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_1(variant_entry) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_2(variant_entry, literal)
+
+#define CASE_JSON_SCHEMA_IS_LITERAL_MUT(...) \
+	__INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_MUT_MACRO_HELPER_IMPL_( \
+	    __VA_ARGS__, __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_2, \
+	    __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_1)(__VA_ARGS__)
+
+#define __INTERNAL_HELPER_MACRO_DONT_USE_CASE_JSON_SCHEMA_IS_LITERAL_MUT_IMPL_2(variant_entry, \
+                                                                                var_name) \
+	case JsonSchemaTypeLiteral: \
+		for(bool _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = true; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+		    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false) \
+			for(_variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_ \
+			        var_name = (variant_entry)._variant_data_for_json_schema_data_member.literal; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl; \
+			    _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl = false)
+
+#define CASE_JSON_SCHEMA_IS_LITERAL_IGN() case JsonSchemaTypeLiteral:
+
+    // clang-format off
+_Pragma ("GCC poison _variant_tag_for_json_schema_tag_member _variant_data_for_json_schema_data_member _for_macro_trick_for_if_expr_impl_once_variant_json_schema_variant_impl _for_macro_trick_for_case_expr_impl_once_variant_json_schema_variant_impl _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_ _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_ _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_ _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_ _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_ _AnonymousUnionForVariantJsonSchemaImpl_DONT_USE AssertTypeImplForJsonSchemaImpl_1_DONT_USE_ AssertTypeImplForJsonSchemaImpl_2_DONT_USE_")
     // clang-format on
