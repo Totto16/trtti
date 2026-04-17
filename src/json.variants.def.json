@@ -112,5 +112,89 @@
                 "order": "best_size"
             }
         }
+    },
+    {
+        "name": "JsonSchema",
+        "member": [
+            {
+                "name": "Object",
+                "type": {
+                    "struct": {
+                        "members": [
+                            {
+                                "name": "obj",
+                                "typeName": "JsonSchemaObject*"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "Array",
+                "type": {
+                    "struct": {
+                        "members": [
+                            {
+                                "name": "arr",
+                                "typeName": "JsonSchemaArray*"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "Number",
+                "type": null
+            },
+            {
+                "name": "String",
+                "type": {
+                    "struct": {
+                        "members": [
+                            {
+                                "name": "str",
+                                "typeName": "JsonSchemaString*"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "Boolean",
+                "type": null
+            },
+            {
+                "name": "JsonSchemaNull",
+                "type": null
+            },
+            {
+                "name": "OneOf",
+                "type": {
+                    "struct": {
+                        "members": [
+                            {
+                                "name": "one_of",
+                                "typeName": "JsonSchemaOneOf*"
+                            }
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "Literal",
+                "type": {
+                    "name": "JsonSchemaLiteral"
+                }
+            }
+        ],
+        "enum": {
+            "name": "JsonSchemaType",
+            "underlyingType": "u8"
+        },
+        "options": {
+            "requirements": {
+                "order": "best_size"
+            }
+        }
     }
 ]

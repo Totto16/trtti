@@ -5,9 +5,7 @@
 #define VARIANT_IMPL_JSON_SCHEMA_VARIANTS_COMPILED_WITH_NARROWED_ENUMS \
 	TJSON_VARIANT_IMPL_COMPILED_WITH_NARROWED_ENUMS
 
-#define _TJSON_IMPL_NEED_VARIANTS 3
 #include "./tjson/variants.h"
-#undef _TJSON_IMPL_NEED_VARIANTS
 
 typedef struct JsonSchemaObjectImpl JsonSchemaObject;
 
@@ -25,4 +23,28 @@ typedef struct JsonSchemaOneOfImpl JsonSchemaOneOf;
 
 GENERATE_VARIANT_ALL_JSON_SCHEMA()
 
-TJSON_NODISCARD tstr json_schema_to_string(JsonSchema schema);
+/**
+ * @enum value
+ */
+typedef enum TJSON_C_23_NARROW_ENUM_TO(bool) {
+	JsonSchemaOptionTypeCycleRef,
+	JsonSchemaOptionTypeCycleThrow,
+} JsonSchemaOptionTypeCycle;
+
+/**
+ * @enum value
+ */
+typedef enum TJSON_C_23_NARROW_ENUM_TO(bool) {
+	JsonSchemaOptionTypeReusedRef,
+	JsonSchemaOptionTypeReusedInline,
+} JsonSchemaOptionTypeReused;
+
+typedef struct {
+	JsonSchemaOptionTypeCycle cycles;
+	JsonSchemaOptionTypeReused reused;
+} JsonSchemaOptions;
+
+TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* schema);
+
+TJSON_NODISCARD tstr json_schema_to_string_advanced(const JsonSchema* schema,
+                                                    JsonSchemaOptions options);

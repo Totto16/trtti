@@ -70,25 +70,9 @@ else
         install_dir: 'generated',
     )
 
-    json_schema_variants_generated_tgt = custom_target(
-        'json_schema_variants',
-        command: [
-            c_variant_generator,
-            '-o',
-            '@OUTPUT@',
-            '-i',
-            '@INPUT@',
-        ],
-        input: [meson.project_source_root() / 'src' / 'json.schema.variants.def.json'],
-        output: ['json_schema_variants.h'],
-        build_subdir: 'generated' / 'json_schema' / 'variants',
-        install: true,
-        install_dir: 'generated',
-    )
-
     json_variants_dep = declare_dependency(
         version: meson.project_version(),
-        sources: [json_variants_generated_tgt, json_schema_variants_generated_tgt],
+        sources: [json_variants_generated_tgt],
         compile_args: ['-D_TJSON_USE_VARIANT_IMPL=1'],
     )
 

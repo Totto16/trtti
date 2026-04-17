@@ -64,9 +64,7 @@
 
 // end of utils
 
-#define _TJSON_IMPL_NEED_VARIANTS 2
 #include "./tjson/variants.h"
-#undef _TJSON_IMPL_NEED_VARIANTS
 
 #ifdef __cplusplus
 extern "C" {
