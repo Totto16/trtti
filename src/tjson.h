@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <tstr.h>
 
 // public part of the utils
 
@@ -148,6 +149,8 @@ TJSON_NODISCARD tstr json_value_to_string_advanced(const JsonValue* json_value,
 
 TJSON_NODISCARD bool json_string_eq(const JsonString* str1, const JsonString* str2);
 
+TJSON_NODISCARD bool json_string_starts_with(const JsonString* str, const JsonString* prefix);
+
 TJSON_NODISCARD size_t json_array_size(const JsonArray* array);
 
 TJSON_NODISCARD const JsonValue* json_array_at(const JsonArray* array, size_t index);
@@ -191,6 +194,9 @@ TJSON_NODISCARD JsonObject* get_empty_json_object(void);
 
 TJSON_NODISCARD tstr_static json_object_add_entry(JsonObject* json_object, JsonString** key_moved,
                                                   JsonValue value);
+
+TJSON_NODISCARD tstr_static json_object_add_entry_dup(JsonObject* json_object,
+                                                      const JsonString* key, JsonValue value);
 
 TJSON_NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* json_object, const tstr* key,
                                                        JsonValue value);

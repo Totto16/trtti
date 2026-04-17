@@ -1,4 +1,3 @@
-
 #include "./tjson_schema.h"
 
 #include <tmap.h>
@@ -6,12 +5,14 @@
 
 #include "./_impl/utils.h"
 
+#include <tstr_builder.h>
+
 typedef struct {
 	bool required;
 } JsonSchemaOBjectEntryProperties;
 
 typedef struct {
-	JsonSchema schmea;
+	JsonSchema schema;
 	JsonSchemaOBjectEntryProperties props;
 } JsonObjectEntrySchema;
 
@@ -35,7 +36,18 @@ struct JsonSchemaObjectImpl {
 	JsonObjectEntryMap map;
 };
 
+/**
+ * @enum MASK / FLAGS
+ */
+typedef enum ENUM_IS_MASK C_23_NARROW_ENUM_TO(uint16_t){
+	ArrayPropertiesFlagsNone = 0,
+	//
+	ArrayPropertiesFlagsMin = 0x1,
+	ArrayPropertiesFlagsMax = 0x2,
+} ArrayPropertiesFlags;
+
 typedef struct {
+	ArrayPropertiesFlags flags;
 	size_t min_length;
 	size_t max_length;
 } JsonSchemaArrayProperties;
@@ -68,7 +80,7 @@ struct JsonSchemaOneOfImpl {
 };
 
 typedef struct {
-	JsonSchema schema;
+	JsonObject* object;
 } JsonDefEntry;
 
 typedef struct {
@@ -91,182 +103,239 @@ TMAP_EQ_FUNC_SIG(JsonDefId, JsonDefIdName) {
 
 typedef TMAP_TYPENAME_MAP(JsonDefEntryMapImpl) JsonDefEntryMap;
 
-/* NOLINTBEGIN(misc-use-internal-linkage,totto-function-passing-type,totto-use-fixed-width-types-var)
- */
-// GCOVR_EXCL_START (external library)
-TVEC_DEFINE_AND_IMPLEMENT_VEC_TYPE_EXTENDED(JsonSchema*, JsonSchemaPtr)
-// GCOVR_EXCL_STOP
-/* NOLINTEND(misc-use-internal-linkage,totto-function-passing-type,totto-use-fixed-width-types-var)
- */
-
-typedef TVEC_TYPENAME(JsonSchemaPtr) JsonSchemaPtrArray;
-
 typedef struct {
 	size_t global_count;
 	JsonDefEntryMap defs;
-	JsonSchemaPtrArray current_nested_values;
 } JsonSchemaState;
 
-TJSON_NODISCARD static JsonObject* json_schema_to_string_impl(const JsonSchema* const schema,
-                                                              const JsonSchemaOptions options,
-                                                              JsonSchemaState* const state);
+// manual "variant", but only used internally, so it's fine
+typedef struct {
+	bool is_error;
+	union {
+		JsonDefId ok;
+		tstr_static error;
+	} data;
+} JsonSchemaAddResult;
 
-TJSON_NODISCARD static JsonObject*
+NODISCARD static inline JsonSchemaAddResult
+new_json_schema_add_result_error(tstr_static const error) {
+	return (JsonSchemaAddResult){ .is_error = true, .data = { .error = error } };
+}
+
+NODISCARD MAYBE_UNUSED static inline JsonSchemaAddResult
+new_json_schema_add_result_ok(JsonDefId const ok) {
+	return (JsonSchemaAddResult){ .is_error = false, .data = { .ok = ok } };
+}
+
+static JsonSchemaAddResult json_schema_to_string_make_def_impl(JsonObject* const object,
+                                                               JsonSchemaState* const state) {
+
+	JsonDefId id = { .value = state->global_count };
+
+	state->global_count++;
+
+	JsonDefEntry entry = { .object = object };
+
+	TmapInsertResult result = TMAP_INSERT(JsonDefEntryMapImpl, &(state->defs), id, entry, false);
+
+	OOM_ASSERT(result == TmapInsertResultOk, "insert failed");
+	return new_json_schema_add_result_ok(id);
+}
+
+#define SCHEMA_NAME_TEMPLATE "__schema%zu"
+
+TJSON_NODISCARD static tstr json_schema_impl_get_def_schema_name(const JsonDefId id) {
+
+	StringBuilder* string_builder = string_builder_init();
+
+	ASSERT(string_builder != NULL);
+
+	STRING_BUILDER_APPENDF(string_builder, return tstr_null();
+	                       , "#/$defs/" SCHEMA_NAME_TEMPLATE, id.value);
+
+	return string_builder_release_into_tstr(&string_builder);
+}
+
+TJSON_NODISCARD static tstr json_schema_impl_get_schema_name(const JsonDefId id) {
+
+	StringBuilder* string_builder = string_builder_init();
+
+	ASSERT(string_builder != NULL);
+
+	STRING_BUILDER_APPENDF(string_builder, return tstr_null();, SCHEMA_NAME_TEMPLATE, id.value);
+
+	return string_builder_release_into_tstr(&string_builder);
+}
+
+TJSON_NODISCARD static JsonSchemaAddResult
+json_schema_to_string_impl(const JsonSchema* const schema,
+
+                           JsonSchemaState* const state);
+
+TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_object_impl(const JsonSchemaObject* const object,
-                                  const JsonSchemaOptions options, JsonSchemaState* const state) {
+                                  JsonSchemaState* const state) {
 	return NULL;
 }
 
-TJSON_NODISCARD static JsonObject*
+TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_array_impl(const JsonSchemaArray* const object,
-                                 const JsonSchemaOptions options, JsonSchemaState* const state) {
+                                 JsonSchemaState* const state) {
 	return NULL;
 }
 
-TJSON_NODISCARD static JsonObject* json_schema_to_string_number_impl(void) {
-	return NULL;
-}
+TJSON_NODISCARD static JsonSchemaAddResult
+json_schema_to_string_number_impl(JsonSchemaState* const state) {
 
-TJSON_NODISCARD static JsonObject*
-json_schema_to_string_string_impl(const JsonSchemaString* const string,
-                                  const JsonSchemaOptions options, JsonSchemaState* const state) {
-	return NULL;
-}
+	// see: https://json-schema.org/understanding-json-schema/reference/numeric
 
-TJSON_NODISCARD static JsonObject* json_schema_to_string_boolean_impl() {
-	return NULL;
-}
+	JsonObject* const root = get_empty_json_object();
 
-TJSON_NODISCARD static JsonObject* json_schema_to_string_null_impl() {
-	return NULL;
-}
+	ASSERT(root != NULL);
 
-TJSON_NODISCARD static JsonObject*
-json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
-                                  const JsonSchemaOptions options, JsonSchemaState* const state) {
-	return NULL;
-}
+	{
+		tstr_static insert_result = json_object_add_entry_cstr(
+		    root, "type", new_json_value_string(json_get_string_from_cstr("number")));
 
-TJSON_NODISCARD static JsonObject*
-json_schema_to_string_literal_impl(const JsonSchemaLiteral* const literal,
-                                   const JsonSchemaOptions options, JsonSchemaState* const state) {
-	return NULL;
-}
-
-TJSON_NODISCARD static bool json_schema_to_string_impl_check_cycle(JsonSchemaState* const state,
-                                                                   const JsonSchemaOptions options,
-                                                                   const JsonSchema* const schema) {
-
-	for(size_t i = 0; i < TVEC_LENGTH(JsonSchemaPtr, (state->current_nested_values)); ++i) {
-		const JsonSchema* const schema_ptr =
-		    TVEC_AT(JsonSchemaPtr, (state->current_nested_values), i);
-
-		if(schema == schema_ptr) {
-			if(options.cycles == JsonSchemaOptionTypeCycleThrow) {
-				return false;
-			} else if(options.cycles == JsonSchemaOptionTypeCycleRef) {
-				return REF;
-			} else {
-				return NULL;
-			}
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
 		}
 	}
 
-	return true;
+	return json_schema_to_string_make_def_impl(root, state);
 }
 
-TJSON_NODISCARD static JsonObject* json_schema_to_string_impl(const JsonSchema* const schema,
-                                                              const JsonSchemaOptions options,
-                                                              JsonSchemaState* const state) {
+TJSON_NODISCARD static JsonSchemaAddResult
+json_schema_to_string_string_impl(const JsonSchemaString* const string,
+                                  JsonSchemaState* const state) {
+	return NULL;
+}
 
-	if(!json_schema_to_string_impl_check_cycle(state, options, schema)) {
-		return NULL;
+TJSON_NODISCARD static JsonSchemaAddResult
+json_schema_to_string_boolean_impl(JsonSchemaState* const state) {
+	// see: https://json-schema.org/understanding-json-schema/reference/boolean
+
+	JsonObject* const root = get_empty_json_object();
+
+	ASSERT(root != NULL);
+
+	{
+		tstr_static insert_result = json_object_add_entry_cstr(
+		    root, "type", new_json_value_string(json_get_string_from_cstr("boolean")));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
 	}
 
-	JsonObject* result = NULL;
+	return json_schema_to_string_make_def_impl(root, state);
+}
+
+TJSON_NODISCARD static JsonSchemaAddResult
+json_schema_to_string_null_impl(JsonSchemaState* const state) {
+	// see: https://json-schema.org/understanding-json-schema/reference/null
+
+	JsonObject* const root = get_empty_json_object();
+
+	ASSERT(root != NULL);
+
+	{
+		tstr_static insert_result = json_object_add_entry_cstr(
+		    root, "type", new_json_value_string(json_get_string_from_cstr("null")));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+	}
+
+	return json_schema_to_string_make_def_impl(root, state);
+}
+
+TJSON_NODISCARD static JsonSchemaAddResult
+json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
+                                  JsonSchemaState* const state) {
+	return NULL;
+}
+
+TJSON_NODISCARD static JsonSchemaAddResult
+json_schema_to_string_literal_impl(const JsonSchemaLiteral* const literal,
+                                   JsonSchemaState* const state) {
+	return NULL;
+}
+
+TJSON_NODISCARD static JsonSchemaAddResult
+json_schema_to_string_impl(const JsonSchema* const schema,
+
+                           JsonSchemaState* const state) {
 
 	SWITCH_JSON_SCHEMA(*schema) {
 		CASE_JSON_SCHEMA_IS_OBJECT_CONST(*schema) {
-			result = json_schema_to_string_object_impl(object.obj, options, state);
+			return json_schema_to_string_object_impl(object.obj, state);
 		}
-		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_ARRAY_CONST(*schema) {
-			result = json_schema_to_string_array_impl(array.arr, options, state);
+			return json_schema_to_string_array_impl(array.arr, state);
 		}
-		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_NUMBER() {
-			result = json_schema_to_string_number_impl();
+			return json_schema_to_string_number_impl(state);
 		}
-		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_STRING_CONST(*schema) {
-			result = json_schema_to_string_string_impl(string.str, options, state);
+			return json_schema_to_string_string_impl(string.str, state);
 		}
-		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_BOOLEAN() {
-			result = json_schema_to_string_boolean_impl();
+			return json_schema_to_string_boolean_impl(state);
 		}
-		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_NULL() {
-			result = json_schema_to_string_null_impl();
+			return json_schema_to_string_null_impl(state);
 		}
-		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_ONE_OF_CONST(*schema) {
-			result = json_schema_to_string_one_of_impl(one_of.one_of, options, state);
+			return json_schema_to_string_one_of_impl(one_of.one_of, state);
 		}
-		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_LITERAL_CONST(*schema) {
-			result = json_schema_to_string_literal_impl(literal.lit, options, state);
+			return json_schema_to_string_literal_impl(literal.lit, state);
 		}
-		break;
 		VARIANT_CASE_END();
 		default: {
-			result = NULL;
-			break;
+			return new_json_schema_add_result_error(TSTR_STATIC_LIT("unknown schema type"));
 		}
 	}
+}
 
-	if(result == NULL) {
-		return NULL;
-	}
+static void free_json_schema_state(JsonSchemaState* const state) {
+	TMAP_TYPENAME_ITER(JsonDefEntryMapImpl)
+	iter = TMAP_ITER_INIT(JsonDefEntryMapImpl, &(state->defs));
 
-	if(type == Ref) {
-		add_def(result);
-		return empty_objx()
+	TMAP_TYPENAME_ENTRY(JsonDefEntryMapImpl) value;
+
+	while(TMAP_ITER_NEXT(JsonDefEntryMapImpl, &iter, &value)) {
+
+		free_json_object(value.value.object);
 	}
 }
 
+// TODO(Totto): use better return type (a variant xD) !
 TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
-	return json_schema_to_string_advanced(
-	    schema, (JsonSchemaOptions){ .cycles = JsonSchemaOptionTypeCycleRef,
-	                                 .reused = JsonSchemaOptionTypeReusedRef });
-}
-
-static void free_json_schema_state(JsonSchemaState* state) {
-	// TODO
-}
-
-TJSON_NODISCARD tstr json_schema_to_string_advanced(const JsonSchema* const schema,
-                                                    const JsonSchemaOptions options) {
 
 	JsonSchemaState state = {
 		.global_count = 0,
 		.defs = TMAP_EMPTY(JsonDefEntryMapImpl),
-		.current_nested_values = TVEC_EMPTY(JsonSchemaPtr),
 	};
 
-	const JsonObject* const json_items = json_schema_to_string_impl(schema, options, &state);
+	const JsonSchemaAddResult root_res = json_schema_to_string_impl(schema, &state);
 
-	if(json_items == NULL) {
+	if(root_res.is_error) {
+		// TODO(Totto): maybe use the error?
 		free_json_schema_state(&state);
 		return tstr_null();
 	}
+
+	const JsonDefId root_id = root_res.data.ok;
 
 	JsonObject* const root = get_empty_json_object();
 
@@ -278,11 +347,77 @@ TJSON_NODISCARD tstr json_schema_to_string_advanced(const JsonSchema* const sche
 
 		ASSERT(tstr_static_is_null(insert_result));
 
-		/*                                                     {
-		"$schema": "https://json-schema.org/draft/2020-12/schema",
-		...json_items,
-		"$defs": json_defs
-	} */
+		const JsonDefEntry* const root_properties =
+		    TMAP_GET(JsonDefEntryMapImpl, &(state.defs), root_id);
+
+		ASSERT(root_properties != NULL);
+
+		{ // add the root entry
+
+			JsonObjectIter* iter = json_object_get_iterator(root_properties->object);
+
+			JsonString* invalid_start_char = json_get_string_from_cstr("$");
+
+			ASSERT(invalid_start_char != NULL);
+
+			while(true) {
+
+				const JsonObjectEntry* entry = json_object_iterator_next(iter);
+
+				if(entry == NULL) {
+					break;
+				}
+
+				const JsonString* const key = json_object_entry_get_key(entry);
+
+				ASSERT(key != NULL);
+
+				if(json_string_starts_with(key, invalid_start_char)) {
+					// TODO(Totto): free everything and log the reason?
+					return tstr_null();
+				}
+
+				const JsonValue* const value = json_object_entry_get_value(entry);
+
+				ASSERT(value != NULL);
+
+				insert_result = json_object_add_entry_dup(root, key, *value);
+
+				ASSERT(tstr_static_is_null(insert_result));
+			}
+
+			json_object_free_iterator(iter);
+			free_json_string(invalid_start_char);
+		}
+
+		// remove that entry
+
+		// TODO(Totto): check if this was successfull, as this function doesn't return anything yet!
+		TMAP_REM(JsonDefEntryMapImpl, &(state.defs), root_id);
+
+		{ // add the defiunions
+
+			JsonObject* const defs = get_empty_json_object();
+
+			TMAP_TYPENAME_ITER(JsonDefEntryMapImpl)
+			iter = TMAP_ITER_INIT(JsonDefEntryMapImpl, &(state.defs));
+
+			TMAP_TYPENAME_ENTRY(JsonDefEntryMapImpl) value;
+
+			while(TMAP_ITER_NEXT(JsonDefEntryMapImpl, &iter, &value)) {
+
+				const JsonDefId def_id = value.key;
+
+				const tstr schema_name = json_schema_impl_get_schema_name(def_id);
+
+				insert_result = json_object_add_entry_tstr(
+				    defs, &schema_name, new_json_value_object(value.value.object));
+			}
+
+			insert_result = json_object_add_entry_cstr(root, "defs", new_json_value_object(defs));
+
+			ASSERT(tstr_static_is_null(insert_result));
+		}
 	}
 
 	JsonValue final_value = new_json_value_object(root);

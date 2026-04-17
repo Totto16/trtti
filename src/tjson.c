@@ -285,12 +285,47 @@ NODISCARD static JsonObjectKey release_json_string_into_object_key(JsonString** 
 	return result;
 }
 
+NODISCARD static JsonString* get_empty_json_string_impl(void) {
+	JsonString* const string = malloc(sizeof(JsonString));
+
+	if(string == NULL) {
+		return NULL;
+	}
+
+	string->value = TVEC_EMPTY(Utf8Codepoint);
+	return string;
+}
+
 NODISCARD tstr_static json_object_add_entry(JsonObject* const json_object,
                                             JsonString** const key_moved, const JsonValue value) {
 
 	const JsonObjectKey key = release_json_string_into_object_key(key_moved);
 
 	return json_object_add_entry_impl(json_object, key, value);
+}
+
+static JsonString* json_string_dup_impl(const JsonString* const value) {
+
+	JsonString* new_vec = get_empty_json_string_impl();
+
+	if(new_vec == NULL) {
+		return NULL;
+	}
+
+	TvecResult result = TVEC_COPY(Utf8Codepoint, &(value->value), &(new_vec->value));
+
+	ASSERT(result == TvecResultOk);
+
+	return new_vec;
+}
+
+TJSON_NODISCARD tstr_static json_object_add_entry_dup(JsonObject* const json_object,
+                                                      const JsonString* const key,
+                                                      const JsonValue value) {
+
+	JsonString* key_moved = json_string_dup_impl(key);
+
+	return json_object_add_entry(json_object, &key_moved, value);
 }
 
 NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* const json_object, const tstr* key,
@@ -1156,17 +1191,6 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 	// have: minus + int + frac + exp
 	const JsonNumber number = JSON_NUMBER_FROM_MINUS_INT_FRAC_EXP();
 	return new_json_parse_result_ok(new_json_value_number(number));
-}
-
-NODISCARD static JsonString* get_empty_json_string_impl(void) {
-	JsonString* const string = malloc(sizeof(JsonString));
-
-	if(string == NULL) {
-		return NULL;
-	}
-
-	string->value = TVEC_EMPTY(Utf8Codepoint);
-	return string;
 }
 
 NODISCARD static tstr_static json_string_add_char_impl(JsonString* const json_string,
@@ -2073,6 +2097,26 @@ NODISCARD bool json_string_eq(const JsonString* const str1, const JsonString* co
 	const Utf8Codepoint* const data2 = TVEC_DATA_CONST(Utf8Codepoint, &(str2->value));
 
 	return memcmp(data1, data2, sizeof(*data1) * len1) == 0;
+}
+
+TJSON_NODISCARD bool json_string_starts_with(const JsonString* const str,
+                                             const JsonString* const prefix) {
+
+	const size_t len_str = TVEC_LENGTH(Utf8Codepoint, str->value);
+	const size_t len_prefix = TVEC_LENGTH(Utf8Codepoint, prefix->value);
+
+	if(len_str == len_prefix) {
+		return json_string_eq(str, prefix);
+	}
+
+	if(len_str < len_prefix) {
+		return false;
+	}
+
+	const Utf8Codepoint* const data_str = TVEC_DATA_CONST(Utf8Codepoint, &(str->value));
+	const Utf8Codepoint* const data_prefix = TVEC_DATA_CONST(Utf8Codepoint, &(prefix->value));
+
+	return memcmp(data_str, data_prefix, sizeof(*data_str) * len_prefix) == 0;
 }
 
 NODISCARD size_t json_array_size(const JsonArray* const array) {

@@ -23,28 +23,4 @@ typedef struct JsonSchemaOneOfImpl JsonSchemaOneOf;
 
 GENERATE_VARIANT_ALL_JSON_SCHEMA()
 
-/**
- * @enum value
- */
-typedef enum TJSON_C_23_NARROW_ENUM_TO(bool) {
-	JsonSchemaOptionTypeCycleRef,
-	JsonSchemaOptionTypeCycleThrow,
-} JsonSchemaOptionTypeCycle;
-
-/**
- * @enum value
- */
-typedef enum TJSON_C_23_NARROW_ENUM_TO(bool) {
-	JsonSchemaOptionTypeReusedRef,
-	JsonSchemaOptionTypeReusedInline,
-} JsonSchemaOptionTypeReused;
-
-typedef struct {
-	JsonSchemaOptionTypeCycle cycles;
-	JsonSchemaOptionTypeReused reused;
-} JsonSchemaOptions;
-
 TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* schema);
-
-TJSON_NODISCARD tstr json_schema_to_string_advanced(const JsonSchema* schema,
-                                                    JsonSchemaOptions options);
