@@ -254,7 +254,63 @@ json_schema_to_string_null_impl(JsonSchemaState* const state) {
 TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
                                   JsonSchemaState* const state) {
-	return NULL;
+	// see: https://json-schema.org/understanding-json-schema/reference/combining#oneOf
+
+	JsonObject* const root = get_empty_json_object();
+
+	ASSERT(root != NULL);
+
+	JsonArray* one_of_arr = get_empty_json_array();
+
+	ASSERT(one_of_arr != NULL);
+
+	{
+
+		for(size_t i = 0; i < TVEC_LENGTH(JsonSchema, one_of->values); ++i) {
+			const JsonSchema value = TVEC_AT(JsonSchema, (one_of->values), i);
+
+			const JsonSchemaAddResult add_result = json_schema_to_string_impl(&value, state);
+
+			if(add_result.is_error) {
+				return add_result;
+			}
+
+			const JsonDefId result_id = add_result.data.ok;
+
+			JsonObject* const entry_obj = get_empty_json_object();
+
+			{
+
+				const tstr schema_def_name = json_schema_impl_get_def_schema_name(result_id);
+
+				tstr_static insert_result = json_object_add_entry_cstr(
+				    entry_obj, "$ref",
+				    new_json_value_string(json_get_string_from_tstr(&schema_def_name)));
+
+				if(!tstr_static_is_null(insert_result)) {
+					return new_json_schema_add_result_error(insert_result);
+				}
+			}
+
+			tstr_static insert_result =
+			    json_array_add_entry(one_of_arr, new_json_value_object(entry_obj));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
+		}
+	}
+
+	{
+		tstr_static insert_result =
+		    json_object_add_entry_cstr(root, "oneOf", new_json_value_array(one_of_arr));
+
+		if(!tstr_static_is_null(insert_result)) {
+			return new_json_schema_add_result_error(insert_result);
+		}
+	}
+
+	return json_schema_to_string_make_def_impl(root, state);
 }
 
 TJSON_NODISCARD static JsonSchemaAddResult
