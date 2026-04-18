@@ -369,7 +369,7 @@ static void free_json_key(JsonObjectKey* key);
 NODISCARD static JsonError
 json_parse_impl_parse_object_member(JsonParseState* const state, // NOLINT(misc-no-recursion)
                                     JsonObject* const json_object) {
-	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-2
+	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-4
 	// member = string name-separator value
 
 	if(json_parse_state_is_eof(*state)) {
@@ -464,7 +464,7 @@ json_parse_impl_parse_object_member(JsonParseState* const state, // NOLINT(misc-
 NODISCARD static JsonParseResult
 json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-recursion)
 
-	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-2
+	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-4
 
 	//       object = begin-object [ member *( value-separator member ) ] end-object
 	// member = string name-separator value
@@ -664,7 +664,7 @@ json_parse_impl_parse_array_value(JsonParseState* const state, // NOLINT(misc-no
 NODISCARD static JsonParseResult
 json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-recursion)
 
-	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-2
+	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-5
 
 	//       array = begin-array [ value *( value-separator value ) ] end-array
 	// begin-array     = ws %x5B ws  ; [ left square bracket
@@ -804,7 +804,7 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 NODISCARD static JsonError json_parse_impl_parse_number_int_part(JsonParseState* const state,
                                                                  double* const out_result) {
 
-	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-2
+	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-6
 	//     int = zero / ( digit1-9 *DIGIT )
 	// digit1-9 = %x31-39         ; 1-9
 	// zero = %x30                ; 0
@@ -864,7 +864,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_int_part(JsonParseState*
 NODISCARD static JsonError json_parse_impl_parse_number_frac_part(JsonParseState* const state,
                                                                   double* const out_result) {
 
-	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-2
+	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-6
 	//     frac = decimal-point 1*DIGIT
 	// decimal-point = %x2E       ; .
 
@@ -921,7 +921,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_frac_part(JsonParseState
 NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState* const state,
                                                                  int64_t* const out_result) {
 
-	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-2.
+	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-6
 	//      exp = e [ minus / plus ] 1*DIGIT
 	// digit1-9 = %x31-39         ; 1-9
 	// e = %x65 / %x45            ; e E
@@ -1029,7 +1029,7 @@ NODISCARD static double json_number_make_value_int_exp(double int_value, int64_t
 
 NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* const state) {
 
-	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-2
+	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-6
 	//     number = [ minus ] int [ frac ] [ exp ]
 	// decimal-point = %x2E       ; .
 	// digit1-9 = %x31-39         ; 1-9
@@ -1253,7 +1253,7 @@ NODISCARD static Utf8NextCharResult utf8_get_next_char_and_consume(JsonParseStat
 }
 
 NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* const state) {
-	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-2
+	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-7
 	//       string = quotation-mark *char quotation-mark
 	//  char = unescaped /
 	//      escape (
@@ -1475,7 +1475,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 NODISCARD static JsonParseResult
 json_parse_impl_parse_value(JsonParseState* const state) { // NOLINT(misc-no-recursion)
 
-	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-2
+	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-3
 	//       value = false / null / true / object / array / number / string
 
 	if(json_parse_state_is_eof(*state)) {
