@@ -31,20 +31,21 @@ typedef TMAP_TYPENAME_MAP(JsonObjectEntryMapImpl) JsonObjectEntryMap;
 
 struct JsonSchemaObjectImpl {
 	JsonObjectEntryMap map;
+	bool allow_additional_properties;
 };
 
 /**
  * @enum MASK / FLAGS
  */
-typedef enum ENUM_IS_MASK C_23_NARROW_ENUM_TO(uint16_t){
-	ArrayPropertiesFlagsNone = 0,
+typedef enum C_23_NARROW_ENUM_TO(uint8_t) {
+	JsonSchemaArrayPropertiesFlagsNone = 0,
 	//
-	ArrayPropertiesFlagsMin = 0x1,
-	ArrayPropertiesFlagsMax = 0x2,
-} ArrayPropertiesFlags;
+	JsonSchemaArrayPropertiesFlagsMin = 0x1,
+	JsonSchemaArrayPropertiesFlagsMax = 0x2,
+} JsonSchemaArrayPropertiesFlags;
 
 typedef struct {
-	ArrayPropertiesFlags flags;
+	JsonSchemaArrayPropertiesFlags flags;
 	size_t min_length;
 	size_t max_length;
 } JsonSchemaArrayProperties;
@@ -62,10 +63,23 @@ typedef TVEC_TYPENAME(JsonSchema) JsonSchemaArrOfValuesImpl;
 struct JsonSchemaArrayImpl {
 	JsonSchema items;
 	JsonSchemaArrayProperties props;
+	bool require_unique_items;
 };
 
+/**
+ * @enum MASK / FLAGS
+ */
+typedef enum C_23_NARROW_ENUM_TO(uint8_t) {
+	JsonSchemaStringPropertiesFlagsNone = 0,
+	//
+	JsonSchemaStringPropertiesFlagsMin = 0x1,
+	JsonSchemaStringPropertiesFlagsMax = 0x2,
+} JsonSchemaStringPropertiesFlags;
+
 typedef struct {
-	JsonSchemaArrayProperties parent;
+	JsonSchemaStringPropertiesFlags flags;
+	size_t min_length;
+	size_t max_length;
 } JsonSchemaStringProperties;
 
 struct JsonSchemaStringImpl {
@@ -186,11 +200,15 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 			return new_json_schema_add_result_error(insert_result);
 		}
 
-		insert_result = json_object_add_entry_cstr(
-		    root, "additionalProperties", new_json_value_boolean((JsonBoolean){ .value = false }));
+		if(!(object->allow_additional_properties)) {
 
-		if(!tstr_static_is_null(insert_result)) {
-			return new_json_schema_add_result_error(insert_result);
+			insert_result =
+			    json_object_add_entry_cstr(root, "additionalProperties",
+			                               new_json_value_boolean((JsonBoolean){ .value = false }));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
 		}
 	}
 
@@ -282,6 +300,8 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 	return json_schema_to_string_make_def_impl(root, state);
 }
 
+#define HAS_FLAG(value, flag) (((value) & (flag)) == (flag))
+
 TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaState* const state) {
 	// see: https://json-schema.org/understanding-json-schema/reference/array
@@ -294,6 +314,16 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaS
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
+		}
+
+		if((array->require_unique_items)) {
+
+			insert_result = json_object_add_entry_cstr(
+			    root, "uniqueItems", new_json_value_boolean((JsonBoolean){ .value = true }));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
 		}
 	}
 
@@ -338,12 +368,28 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaS
 
 	{ // handle props
 
-		// TODO:handle props
-		tstr_static insert_result = json_object_add_entry_cstr(
-		    root, "PROPS", new_json_value_string(json_get_string_from_cstr("TODO")));
+		const JsonSchemaArrayProperties array_props = array->props;
 
-		if(!tstr_static_is_null(insert_result)) {
-			return new_json_schema_add_result_error(insert_result);
+		if(HAS_FLAG(array_props.flags, JsonSchemaArrayPropertiesFlagsMin)) {
+
+			tstr_static insert_result = json_object_add_entry_cstr(
+			    root, "minItems",
+			    new_json_value_number((JsonNumber){ .value = (double)array_props.min_length }));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
+		}
+
+		if(HAS_FLAG(array_props.flags, JsonSchemaArrayPropertiesFlagsMax)) {
+
+			tstr_static insert_result = json_object_add_entry_cstr(
+			    root, "maxItems",
+			    new_json_value_number((JsonNumber){ .value = (double)array_props.max_length }));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
 		}
 	}
 

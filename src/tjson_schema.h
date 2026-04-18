@@ -25,7 +25,7 @@ GENERATE_VARIANT_ALL_JSON_SCHEMA()
 
 TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* schema);
 
-TJSON_NODISCARD JsonSchemaObject* json_schema_object_get_empty(void);
+TJSON_NODISCARD JsonSchemaObject* json_schema_object_get(bool allow_additional_properties);
 
 TJSON_NODISCARD tstr_static json_schema_object_add_entry(JsonSchemaObject* json_schema_object,
                                                          tstr* moved_key, JsonSchema value,
@@ -37,7 +37,8 @@ TJSON_NODISCARD tstr_static json_schema_object_add_entry_dup(JsonSchemaObject* j
 
 void free_json_schema_object(JsonSchemaObject* json_schema_object);
 
-TJSON_NODISCARD JsonSchemaArray* json_schema_array_get(JsonSchema items);
+TJSON_NODISCARD JsonSchemaArray* json_schema_array_get(JsonSchema items,
+                                                       bool require_unique_items);
 
 TJSON_NODISCARD tstr_static json_schema_array_set_min(JsonSchemaArray* json_schema_arr, size_t min);
 
