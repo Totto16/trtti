@@ -1709,9 +1709,17 @@ static void json_to_string_number_impl(StringBuilder* const string_builder,
                                        const JsonSerializeOptions options) {
 
 	UNUSED(options);
-	// TODO(Totto): use better formatting
-	STRING_BUILDER_APPENDF(string_builder, OOM_ASSERT(false, "error in formatting json number");
-	                       , "%f", json_number.value);
+
+	double intpart = 0.0;
+	double fracpart = modf(json_number.value, &intpart);
+
+	if(fracpart == 0.0) {
+		STRING_BUILDER_APPENDF(string_builder, OOM_ASSERT(false, "error in formatting json number");
+		                       , "%.0f", intpart);
+	} else {
+		STRING_BUILDER_APPENDF(string_builder, OOM_ASSERT(false, "error in formatting json number");
+		                       , "%g", json_number.value);
+	}
 }
 
 NODISCARD static bool json_impl_needs_escaping(Utf8Codepoint codepoint) {
