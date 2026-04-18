@@ -1130,6 +1130,12 @@ TJSON_NODISCARD JsonSchemaLiteral* json_schema_literal_get_dup(const tstr* value
 	return json_schema_literal_get_impl(value_dup);
 }
 
+TJSON_NODISCARD JsonSchemaLiteral* json_schema_literal_get_cstr(const char* const value) {
+	tstr value_dup = tstr_from(value);
+
+	return json_schema_literal_get_impl(value_dup);
+}
+
 void free_json_schema_literal(JsonSchemaLiteral* const json_schema_lit) {
 	RC_RELEASE(JsonSchemaLiteral, json_schema_lit);
 }

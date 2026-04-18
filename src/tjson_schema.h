@@ -96,6 +96,8 @@ TJSON_NODISCARD JsonSchemaLiteral* json_schema_literal_get(tstr* value_moved);
 
 TJSON_NODISCARD JsonSchemaLiteral* json_schema_literal_get_dup(const tstr* value);
 
+TJSON_NODISCARD JsonSchemaLiteral* json_schema_literal_get_cstr(const char* value);
+
 void free_json_schema_literal(JsonSchemaLiteral* json_schema_lit);
 
 void free_json_schema(JsonSchema* json_schema);
