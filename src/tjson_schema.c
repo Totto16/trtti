@@ -618,16 +618,16 @@ json_schema_to_string_literal_impl(const JsonSchemaLiteral* const literal,
 }
 
 TJSON_NODISCARD static JsonSchemaAddResult
-json_schema_to_string_impl(const JsonSchema* const schema,
+json_schema_to_string_impl(const JsonSchema* const json_schema,
 
                            JsonSchemaState* const state) {
 
-	SWITCH_JSON_SCHEMA(*schema) {
-		CASE_JSON_SCHEMA_IS_OBJECT_CONST(*schema) {
+	SWITCH_JSON_SCHEMA(*json_schema) {
+		CASE_JSON_SCHEMA_IS_OBJECT_CONST(*json_schema) {
 			return json_schema_to_string_object_impl(object.obj, state);
 		}
 		VARIANT_CASE_END();
-		CASE_JSON_SCHEMA_IS_ARRAY_CONST(*schema) {
+		CASE_JSON_SCHEMA_IS_ARRAY_CONST(*json_schema) {
 			return json_schema_to_string_array_impl(array.arr, state);
 		}
 		VARIANT_CASE_END();
@@ -635,7 +635,7 @@ json_schema_to_string_impl(const JsonSchema* const schema,
 			return json_schema_to_string_number_impl(state);
 		}
 		VARIANT_CASE_END();
-		CASE_JSON_SCHEMA_IS_STRING_CONST(*schema) {
+		CASE_JSON_SCHEMA_IS_STRING_CONST(*json_schema) {
 			return json_schema_to_string_string_impl(string.str, state);
 		}
 		VARIANT_CASE_END();
@@ -647,11 +647,11 @@ json_schema_to_string_impl(const JsonSchema* const schema,
 			return json_schema_to_string_null_impl(state);
 		}
 		VARIANT_CASE_END();
-		CASE_JSON_SCHEMA_IS_ONE_OF_CONST(*schema) {
+		CASE_JSON_SCHEMA_IS_ONE_OF_CONST(*json_schema) {
 			return json_schema_to_string_one_of_impl(one_of.one_of, state);
 		}
 		VARIANT_CASE_END();
-		CASE_JSON_SCHEMA_IS_LITERAL_CONST(*schema) {
+		CASE_JSON_SCHEMA_IS_LITERAL_CONST(*json_schema) {
 			return json_schema_to_string_literal_impl(literal.lit, state);
 		}
 		VARIANT_CASE_END();
@@ -789,6 +789,190 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 	return result;
 }
 
+TJSON_NODISCARD JsonSchemaObject* json_schema_object_get(const bool allow_additional_properties) {
+	JsonSchemaObject* const object = malloc(sizeof(JsonSchemaObject));
+
+	if(object == NULL) {
+		return NULL;
+	}
+
+	object->map = TMAP_EMPTY(JsonObjectEntryMapImpl);
+	object->allow_additional_properties = allow_additional_properties;
+
+	return object;
+}
+
+NODISCARD static tstr_static
+json_schema_object_add_entry_impl(JsonSchemaObject* const json_schema_object, tstr key,
+                                  const JsonObjectEntrySchema entry) {
+
+	const TmapInsertResult result =
+	    TMAP_INSERT(JsonObjectEntryMapImpl, &(json_schema_object->map), key, entry, false);
+
+	switch(result) {
+		case TmapInsertResultOk: {
+			return tstr_static_null();
+		}
+		case TmapInsertResultErr: {
+			return TSTR_STATIC_LIT("json schema object add error");
+		}
+		case TmapInsertResultWouldOverwrite: {
+			return TSTR_STATIC_LIT("json schema object has duplicate key");
+		}
+		default: {
+			return TSTR_STATIC_LIT("json schema object add unknown error");
+		}
+	}
+}
+
+TJSON_NODISCARD tstr_static json_schema_object_add_entry(JsonSchemaObject* const json_schema_object,
+                                                         tstr* const moved_key,
+                                                         const JsonSchema value,
+                                                         const bool required) {
+	const tstr key = *moved_key;
+
+	const JsonObjectEntrySchema entry = { .schema = value, .required = required };
+
+	return json_schema_object_add_entry_impl(json_schema_object, key, entry);
+}
+
+TJSON_NODISCARD tstr_static
+json_schema_object_add_entry_dup(JsonSchemaObject* const json_schema_object, const tstr* const key,
+                                 const JsonSchema value, const bool required) {
+	const tstr key_dup = tstr_dup(key);
+
+	const JsonObjectEntrySchema entry = { .schema = value, .required = required };
+
+	return json_schema_object_add_entry_impl(json_schema_object, key_dup, entry);
+}
+
+static void free_json_object_entry_schema(JsonObjectEntrySchema* const entry) {
+	free_json_schema(&(entry->schema));
+}
+
+void free_json_schema_object(JsonSchemaObject* const json_schema_object) {
+	TMAP_TYPENAME_ITER(JsonObjectEntryMapImpl)
+	iter = TMAP_ITER_INIT(JsonObjectEntryMapImpl, &(json_schema_object->map));
+
+	TMAP_TYPENAME_ENTRY(JsonObjectEntryMapImpl) value;
+
+	while(TMAP_ITER_NEXT(JsonObjectEntryMapImpl, &iter, &value)) {
+
+		free_json_object_entry_schema(&value.value);
+		tstr_free(&value.key);
+	}
+
+	TMAP_FREE(JsonObjectEntryMapImpl, &(json_schema_object->map));
+	free(json_schema_object);
+}
+
+static JsonSchemaArrayProperties empty_array_props_impl(void) {
+
+	const JsonSchemaArrayProperties props = {
+		.flags = JsonSchemaArrayPropertiesFlagsNone,
+		.max_items = 0,
+		.min_items = 0,
+	};
+
+	return props;
+}
+
+TJSON_NODISCARD JsonSchemaArray* json_schema_array_get(const JsonSchema items,
+                                                       const bool require_unique_items) {
+	JsonSchemaArray* const array = malloc(sizeof(JsonSchemaArray));
+
+	if(array == NULL) {
+		return NULL;
+	}
+
+	array->items = items;
+	array->require_unique_items = require_unique_items;
+	array->props = empty_array_props_impl();
+
+	return array;
+}
+
+TJSON_NODISCARD tstr_static json_schema_array_set_min(JsonSchemaArray* const json_schema_arr,
+                                                      const size_t min) {
+
+	if(HAS_FLAG(json_schema_arr->props.flags, JsonSchemaArrayPropertiesFlagsMin)) {
+		return TSTR_STATIC_LIT("array prop error: min already set!");
+	}
+
+	json_schema_arr->props.min_items = min;
+	json_schema_arr->props.flags |= JsonSchemaArrayPropertiesFlagsMin;
+	return tstr_static_null();
+}
+
+TJSON_NODISCARD tstr_static json_schema_array_set_max(JsonSchemaArray* const json_schema_arr,
+                                                      const size_t max) {
+	if(HAS_FLAG(json_schema_arr->props.flags, JsonSchemaArrayPropertiesFlagsMax)) {
+		return TSTR_STATIC_LIT("array prop error: max already set!");
+	}
+
+	json_schema_arr->props.max_items = max;
+	json_schema_arr->props.flags |= JsonSchemaArrayPropertiesFlagsMax;
+	return tstr_static_null();
+}
+
+void free_json_schema_array(JsonSchemaArray* const json_schema_arr) {
+
+	free_json_schema(&(json_schema_arr->items));
+
+	free(json_schema_arr);
+}
+
+static JsonSchemaStringProperties empty_string_props_impl(void) {
+
+	const JsonSchemaStringProperties props = {
+		.flags = JsonSchemaStringPropertiesFlagsNone,
+		.min_length = 0,
+		.max_length = 0,
+		.pattern = NULL,
+	};
+
+	return props;
+}
+
+TJSON_NODISCARD JsonSchemaString* json_schema_string_get(void) {
+	JsonSchemaString* const string = malloc(sizeof(JsonSchemaString));
+
+	if(string == NULL) {
+		return NULL;
+	}
+
+	string->props = empty_string_props_impl();
+
+	return string;
+}
+
+TJSON_NODISCARD tstr_static
+json_schema_string_set_nonempty(JsonSchemaString* const json_schema_str) {
+	return json_schema_string_set_min(json_schema_str, 1);
+}
+
+TJSON_NODISCARD tstr_static json_schema_string_set_min(JsonSchemaString* const json_schema_str,
+                                                       const size_t min) {
+	if(HAS_FLAG(json_schema_str->props.flags, JsonSchemaStringPropertiesFlagsMin)) {
+		return TSTR_STATIC_LIT("string prop error: min already set!");
+	}
+
+	json_schema_str->props.min_length = min;
+	json_schema_str->props.flags |= JsonSchemaStringPropertiesFlagsMin;
+	return tstr_static_null();
+}
+
+TJSON_NODISCARD tstr_static json_schema_string_set_max(JsonSchemaString* const json_schema_str,
+                                                       const size_t max) {
+	if(HAS_FLAG(json_schema_str->props.flags, JsonSchemaStringPropertiesFlagsMax)) {
+		return TSTR_STATIC_LIT("string prop error: max already set!");
+	}
+
+	json_schema_str->props.max_length = max;
+	json_schema_str->props.flags |= JsonSchemaStringPropertiesFlagsMax;
+	return tstr_static_null();
+}
+
 TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get(const char* const str) {
 	const tstr temp = tstr_from_static_cstr(str);
 	return json_schema_regex_get_tstr(&temp);
@@ -823,4 +1007,110 @@ void free_json_schema_regex(JsonSchemaRegex* const json_schema_regex) {
 	tstr_free(&(json_schema_regex->original));
 
 	free(json_schema_regex);
+}
+
+TJSON_NODISCARD tstr_static json_schema_string_set_regex(JsonSchemaString* const json_schema_str,
+                                                         JsonSchemaRegex* const regex) {
+
+	if(regex == NULL) {
+		return TSTR_STATIC_LIT("string prop error: empty regex passed");
+	}
+
+	if(HAS_FLAG(json_schema_str->props.flags, JsonSchemaStringPropertiesFlagsPattern)) {
+		return TSTR_STATIC_LIT("string prop error: pattern already set!");
+	}
+
+	json_schema_str->props.pattern = regex;
+	json_schema_str->props.flags |= JsonSchemaStringPropertiesFlagsPattern;
+	return tstr_static_null();
+}
+
+void free_json_schema_string(JsonSchemaString* const json_schema_string) {
+
+	if(json_schema_string->props.pattern != NULL) {
+		free_json_schema_regex(json_schema_string->props.pattern);
+	}
+
+	free(json_schema_string);
+}
+
+TJSON_NODISCARD JsonSchemaOneOf* json_schema_one_of_get_empty(void) {
+	JsonSchemaOneOf* const one_of = malloc(sizeof(JsonSchemaOneOf));
+
+	if(one_of == NULL) {
+		return NULL;
+	}
+
+	one_of->values = TVEC_EMPTY(JsonSchema);
+
+	return one_of;
+}
+
+TJSON_NODISCARD tstr_static json_schema_one_of_add_entry(JsonSchemaOneOf* const json_schema_one_of,
+                                                         const JsonSchema schema) {
+
+	const TvecResult result = TVEC_PUSH(JsonSchema, &(json_schema_one_of->values), schema);
+
+	if(result != TvecResultOk) {
+		return TSTR_STATIC_LIT("json schema one of add error");
+	}
+
+	return tstr_static_null();
+}
+
+void free_json_schema_one_of(JsonSchemaOneOf* const json_schema_one_of) {
+	for(size_t i = 0; i < TVEC_LENGTH(JsonSchema, json_schema_one_of->values); ++i) {
+		JsonSchema* const value = TVEC_GET_AT_MUT(JsonSchema, &(json_schema_one_of->values), i);
+		free_json_schema(value);
+	}
+	TVEC_FREE(JsonSchema, &(json_schema_one_of->values));
+	free(json_schema_one_of);
+}
+
+void free_json_schema(JsonSchema* const json_schema) {
+	SWITCH_JSON_SCHEMA(*json_schema) {
+		CASE_JSON_SCHEMA_IS_OBJECT_CONST(*json_schema) {
+			free_json_schema_object(object.obj);
+		}
+		break;
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_ARRAY_CONST(*json_schema) {
+			free_json_schema_array(array.arr);
+		}
+		break;
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_NUMBER() {}
+		break;
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_STRING_CONST(*json_schema) {
+			free_json_schema_string(string.str);
+		}
+		break;
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_BOOLEAN() {}
+		break;
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_NULL() {}
+		break;
+		CASE_JSON_SCHEMA_IS_ONE_OF_CONST(*json_schema) {
+			free_json_schema_one_of(one_of.one_of);
+		}
+		break;
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_LITERAL_CONST(*json_schema) {
+			free_json_schema_literal(literal.lit);
+		}
+		break;
+		VARIANT_CASE_END();
+		VARIANT_CASE_END();
+		default: {
+			break;
+		}
+	}
+
+	*json_schema = new_json_schema_null();
+}
+
+void free_json_schema_literal(JsonSchemaLiteral* const json_schema_lit) {
+	tstr_free(&(json_schema_lit->value));
 }
