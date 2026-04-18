@@ -46,8 +46,8 @@ typedef enum C_23_NARROW_ENUM_TO(uint8_t) {
 
 typedef struct {
 	JsonSchemaArrayPropertiesFlags flags;
-	size_t min_length;
-	size_t max_length;
+	size_t min_items;
+	size_t max_items;
 } JsonSchemaArrayProperties;
 
 /* NOLINTBEGIN(misc-use-internal-linkage,totto-function-passing-type,totto-use-fixed-width-types-var)
@@ -74,12 +74,14 @@ typedef enum C_23_NARROW_ENUM_TO(uint8_t) {
 	//
 	JsonSchemaStringPropertiesFlagsMin = 0x1,
 	JsonSchemaStringPropertiesFlagsMax = 0x2,
+	JsonSchemaStringPropertiesFlagsPattern = 0x4,
 } JsonSchemaStringPropertiesFlags;
 
 typedef struct {
 	JsonSchemaStringPropertiesFlags flags;
 	size_t min_length;
 	size_t max_length;
+	JsonSchemaRegex* pattern;
 } JsonSchemaStringProperties;
 
 struct JsonSchemaStringImpl {
@@ -374,7 +376,7 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaS
 
 			tstr_static insert_result = json_object_add_entry_cstr(
 			    root, "minItems",
-			    new_json_value_number((JsonNumber){ .value = (double)array_props.min_length }));
+			    new_json_value_number((JsonNumber){ .value = (double)array_props.min_items }));
 
 			if(!tstr_static_is_null(insert_result)) {
 				return new_json_schema_add_result_error(insert_result);
@@ -385,7 +387,7 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaS
 
 			tstr_static insert_result = json_object_add_entry_cstr(
 			    root, "maxItems",
-			    new_json_value_number((JsonNumber){ .value = (double)array_props.max_length }));
+			    new_json_value_number((JsonNumber){ .value = (double)array_props.max_items }));
 
 			if(!tstr_static_is_null(insert_result)) {
 				return new_json_schema_add_result_error(insert_result);
@@ -417,6 +419,11 @@ json_schema_to_string_number_impl(JsonSchemaState* const state) {
 	return json_schema_to_string_make_def_impl(root, state);
 }
 
+struct JsonSchemaRegexImpl {
+	SimpleRegex regex;
+	tstr original;
+};
+
 TJSON_NODISCARD static JsonSchemaAddResult
 json_schema_to_string_string_impl(const JsonSchemaString* const string,
                                   JsonSchemaState* const state) {
@@ -438,14 +445,41 @@ json_schema_to_string_string_impl(const JsonSchemaString* const string,
 
 	{ // handle props
 
-		UNUSED(string);
+		const JsonSchemaStringProperties string_props = string->props;
 
-		// TODO:handle props
-		tstr_static insert_result = json_object_add_entry_cstr(
-		    root, "PROPS", new_json_value_string(json_get_string_from_cstr("TODO")));
+		if(HAS_FLAG(string_props.flags, JsonSchemaStringPropertiesFlagsMin)) {
 
-		if(!tstr_static_is_null(insert_result)) {
-			return new_json_schema_add_result_error(insert_result);
+			tstr_static insert_result = json_object_add_entry_cstr(
+			    root, "minLength",
+			    new_json_value_number((JsonNumber){ .value = (double)string_props.min_length }));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
+		}
+
+		if(HAS_FLAG(string_props.flags, JsonSchemaStringPropertiesFlagsMax)) {
+
+			tstr_static insert_result = json_object_add_entry_cstr(
+			    root, "maxLength",
+			    new_json_value_number((JsonNumber){ .value = (double)string_props.max_length }));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
+		}
+
+		if(HAS_FLAG(string_props.flags, JsonSchemaStringPropertiesFlagsPattern)) {
+
+			assert(string_props.pattern != NULL);
+
+			tstr_static insert_result = json_object_add_entry_cstr(
+			    root, "pattern",
+			    new_json_value_string(json_get_string_from_tstr(&string_props.pattern->original)));
+
+			if(!tstr_static_is_null(insert_result)) {
+				return new_json_schema_add_result_error(insert_result);
+			}
 		}
 	}
 
@@ -755,10 +789,6 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 	return result;
 }
 
-struct JsonSchemaRegexImpl {
-	SimpleRegex regex;
-};
-
 TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get(const char* const str) {
 	const tstr temp = tstr_from_static_cstr(str);
 	return json_schema_regex_get_tstr(&temp);
@@ -782,6 +812,15 @@ TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get_tstr(const tstr* const st
 	}
 
 	json_schema_regex->regex = regex;
+	json_schema_regex->original = tstr_dup(str);
 
 	return json_schema_regex;
+}
+
+void free_json_schema_regex(JsonSchemaRegex* const json_schema_regex) {
+
+	free_simple_regex(&(json_schema_regex->regex));
+	tstr_free(&(json_schema_regex->original));
+
+	free(json_schema_regex);
 }
