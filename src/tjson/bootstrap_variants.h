@@ -195,24 +195,24 @@
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_ \
-	    json_value_get_as_object(JsonValue const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_ \
+	json_value_get_as_object(JsonValue const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry._variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeObject); \
 		return variant_entry._variant_data_for_json_value_data_member.object; \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_* \
-	    json_value_get_as_object_mut_ref(JsonValue* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_* \
+	json_value_get_as_object_mut_ref(JsonValue* const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry->_variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeObject); \
 		return &(variant_entry->_variant_data_for_json_value_data_member.object); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_* \
-	    json_value_get_as_object_const_ref(const JsonValue* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_value_id_0_name_object_impl_* \
+	json_value_get_as_object_const_ref(const JsonValue* const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry->_variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeObject); \
 		return &(variant_entry->_variant_data_for_json_value_data_member.object); \
@@ -231,24 +231,24 @@
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_ \
-	    json_value_get_as_array(JsonValue const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_ \
+	json_value_get_as_array(JsonValue const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry._variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeArray); \
 		return variant_entry._variant_data_for_json_value_data_member.array; \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_* \
-	    json_value_get_as_array_mut_ref(JsonValue* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_* \
+	json_value_get_as_array_mut_ref(JsonValue* const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry->_variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeArray); \
 		return &(variant_entry->_variant_data_for_json_value_data_member.array); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_* \
-	    json_value_get_as_array_const_ref(const JsonValue* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_value_id_1_name_array_impl_* \
+	json_value_get_as_array_const_ref(const JsonValue* const variant_entry) { \
 		VARIANT_JSON_VALUE_STATE_ASSERT(variant_entry->_variant_tag_for_json_value_tag_member, \
 		                                JsonValueTypeArray); \
 		return &(variant_entry->_variant_data_for_json_value_data_member.array); \
@@ -1604,7 +1604,7 @@ _Pragma ("GCC poison _variant_tag_for_json_source_tag_member _variant_data_for_j
 	} _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_; \
 \
 	typedef struct { \
-		JsonSchemaLiteral* lit; \
+		JsonSchemaLiteral lit; \
 	} _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_; \
 \
 	/* raw union for variant */ \
@@ -1690,24 +1690,24 @@ _Pragma ("GCC poison _variant_tag_for_json_source_tag_member _variant_data_for_j
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_ \
-	    json_schema_get_as_object(JsonSchema const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_ \
+	json_schema_get_as_object(JsonSchema const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeObject); \
 		return variant_entry._variant_data_for_json_schema_data_member.object; \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_* \
-	    json_schema_get_as_object_mut_ref(JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_* \
+	json_schema_get_as_object_mut_ref(JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeObject); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.object); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_* \
-	    json_schema_get_as_object_const_ref(const JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_2_name_object_impl_* \
+	json_schema_get_as_object_const_ref(const JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeObject); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.object); \
@@ -1726,24 +1726,24 @@ _Pragma ("GCC poison _variant_tag_for_json_source_tag_member _variant_data_for_j
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_ \
-	    json_schema_get_as_array(JsonSchema const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_ \
+	json_schema_get_as_array(JsonSchema const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeArray); \
 		return variant_entry._variant_data_for_json_schema_data_member.array; \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_* \
-	    json_schema_get_as_array_mut_ref(JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_* \
+	json_schema_get_as_array_mut_ref(JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeArray); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.array); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_* \
-	    json_schema_get_as_array_const_ref(const JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_3_name_array_impl_* \
+	json_schema_get_as_array_const_ref(const JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeArray); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.array); \
@@ -1769,24 +1769,24 @@ _Pragma ("GCC poison _variant_tag_for_json_source_tag_member _variant_data_for_j
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_ \
-	    json_schema_get_as_string(JsonSchema const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_ \
+	json_schema_get_as_string(JsonSchema const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeString); \
 		return variant_entry._variant_data_for_json_schema_data_member.string; \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_* \
-	    json_schema_get_as_string_mut_ref(JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_* \
+	json_schema_get_as_string_mut_ref(JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeString); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.string); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_* \
-	    json_schema_get_as_string_const_ref(const JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_4_name_string_impl_* \
+	json_schema_get_as_string_const_ref(const JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeString); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.string); \
@@ -1819,31 +1819,31 @@ _Pragma ("GCC poison _variant_tag_for_json_source_tag_member _variant_data_for_j
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_ \
-	    json_schema_get_as_one_of(JsonSchema const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_ \
+	json_schema_get_as_one_of(JsonSchema const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeOneOf); \
 		return variant_entry._variant_data_for_json_schema_data_member.one_of; \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_* \
-	    json_schema_get_as_one_of_mut_ref(JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_* \
+	json_schema_get_as_one_of_mut_ref(JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeOneOf); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.one_of); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_* \
-	    json_schema_get_as_one_of_const_ref(const JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_* \
+	json_schema_get_as_one_of_const_ref(const JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeOneOf); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.one_of); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
-	new_json_schema_literal(JsonSchemaLiteral* const lit) { \
+	new_json_schema_literal(JsonSchemaLiteral const lit) { \
 		return (JsonSchema){ \
 			._variant_tag_for_json_schema_tag_member = JsonSchemaTypeLiteral, \
 			._variant_data_for_json_schema_data_member = \
@@ -1855,24 +1855,24 @@ _Pragma ("GCC poison _variant_tag_for_json_source_tag_member _variant_data_for_j
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_ \
-	    json_schema_get_as_literal(JsonSchema const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_ \
+	json_schema_get_as_literal(JsonSchema const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry._variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeLiteral); \
 		return variant_entry._variant_data_for_json_schema_data_member.literal; \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_* \
-	    json_schema_get_as_literal_mut_ref(JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_* \
+	json_schema_get_as_literal_mut_ref(JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeLiteral); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.literal); \
 	} \
 \
 	JSON_VARIANTS_NODISCARD \
-	    JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_* \
-	    json_schema_get_as_literal_const_ref(const JsonSchema* const variant_entry) { \
+	JSON_VARIANTS_MAYBE_UNUSED static inline const _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_* \
+	json_schema_get_as_literal_const_ref(const JsonSchema* const variant_entry) { \
 		VARIANT_JSON_SCHEMA_STATE_ASSERT(variant_entry->_variant_tag_for_json_schema_tag_member, \
 		                                 JsonSchemaTypeLiteral); \
 		return &(variant_entry->_variant_data_for_json_schema_data_member.literal); \

@@ -589,8 +589,7 @@ json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
 }
 
 TJSON_NODISCARD static JsonSchemaAddResult
-json_schema_to_string_literal_impl(const JsonSchemaLiteral* const literal,
-                                   JsonSchemaState* const state) {
+json_schema_to_string_literal_impl(const JsonSchemaLiteral literal, JsonSchemaState* const state) {
 	// see: https://json-schema.org/understanding-json-schema/reference/const
 	// and: https://json-schema.org/understanding-json-schema/reference/string
 
@@ -607,7 +606,7 @@ json_schema_to_string_literal_impl(const JsonSchemaLiteral* const literal,
 		}
 
 		insert_result = json_object_add_entry_cstr(
-		    root, "const", new_json_value_string(json_get_string_from_tstr(&(literal->value))));
+		    root, "const", new_json_value_string(json_get_string_from_tstr(&(literal.value))));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -1097,8 +1096,8 @@ void free_json_schema(JsonSchema* const json_schema) {
 		}
 		break;
 		VARIANT_CASE_END();
-		CASE_JSON_SCHEMA_IS_LITERAL_CONST(*json_schema) {
-			free_json_schema_literal(literal.lit);
+		CASE_JSON_SCHEMA_IS_LITERAL_MUT(*json_schema) {
+			free_json_schema_literal(&(literal.lit));
 		}
 		break;
 		VARIANT_CASE_END();
