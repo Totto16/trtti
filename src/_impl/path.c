@@ -27,20 +27,24 @@ NODISCARD ReadFileResult read_entire_file(const tstr* const file_path) {
 
 	const LibCLong file_size = ftell(file);
 
+	if(file_size < 0) {
+		return new_read_file_result_error(TSTR_STATIC_LIT("Couldn't get the file size"));
+	}
+
 	const LibCInt fseek_res2 = fseek(file, 0, SEEK_SET);
 
 	if(fseek_res2 != 0) {
 		return new_read_file_result_error(TSTR_STATIC_LIT("Couldn't seek to start of file"));
 	}
 
-	LibCChar* file_data = (LibCChar*)malloc(file_size * sizeof(LibCChar));
+	LibCChar* file_data = (LibCChar*)malloc((size_t)file_size * sizeof(LibCChar));
 
 	if(!file_data) {
 		fclose(file);
 		return new_read_file_result_error(TSTR_STATIC_LIT("Couldn't allocate file data"));
 	}
 
-	const size_t fread_result = fread(file_data, 1, file_size, file);
+	const size_t fread_result = fread(file_data, 1, (size_t)file_size, file);
 
 	if(fread_result != (size_t)file_size) {
 		fclose(file);
@@ -57,7 +61,7 @@ NODISCARD ReadFileResult read_entire_file(const tstr* const file_path) {
 		return new_read_file_result_error(TSTR_STATIC_LIT("Couldn't close file"));
 	}
 
-	tstr result = tstr_own(file_data, file_size, file_size);
+	tstr result = tstr_own(file_data, (size_t)file_size, (size_t)file_size);
 
 	return new_read_file_result_ok(result);
 }

@@ -52,7 +52,7 @@ NODISCARD bool simple_regex_match(const SimpleRegex* const regex, const tstr* co
 	// define string boundaries in the first pmatch value
 	const int execute_flags = REG_STARTEND;
 
-	regmatch_t pmatch[1] = { (regmatch_t){ .rm_so = 0, .rm_eo = tstr_len(str) } };
+	regmatch_t pmatch[1] = { (regmatch_t){ .rm_so = 0, .rm_eo = (regoff_t)tstr_len(str) } };
 
 	int match_result = regexec(&(regex->regex), tstr_cstr(str), 1, pmatch, execute_flags);
 

@@ -830,7 +830,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_int_part(JsonParseState*
 		                          TSTR_STATIC_LIT("invalid number int part: incorrect start"));
 	}
 
-	uint64_t value = (first_value - '0');
+	uint64_t value = (uint8_t)(first_value - '0');
 	json_parse_state_skip_by(state, 1, true);
 
 	while(true) {
@@ -846,7 +846,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_int_part(JsonParseState*
 
 		const uint64_t previous_value = value;
 
-		value = (value * 10) + (next_value - '0'); // NOLINT(readability-magic-numbers)
+		value = (value * 10) + (uint8_t)(next_value - '0'); // NOLINT(readability-magic-numbers)
 		json_parse_state_skip_by(state, 1, true);
 
 		if(previous_value > value) {
@@ -1028,7 +1028,7 @@ NODISCARD static double json_number_make_value_int_exp(double int_value, int64_t
 		return int_value / get_power_of_10((uint64_t)(-exp));
 	}
 
-	return int_value * get_power_of_10(exp);
+	return int_value * get_power_of_10((uint64_t)exp);
 }
 
 NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* const state) {
@@ -1251,7 +1251,7 @@ NODISCARD static Utf8NextCharResult utf8_get_next_char_and_consume(JsonParseStat
 		return new_utf8_next_char_result_error(
 		    make_json_error_at(state->loc, TSTR_STATIC_LIT("invalid codepoint length")));
 	}
-	json_parse_state_skip_by(state, result, true);
+	json_parse_state_skip_by(state, (size_t)result, true);
 
 	return new_utf8_next_char_result_ok(codepoint);
 }
@@ -1442,11 +1442,11 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 				uint8_t num = 0;
 
 				if(value >= '0' && value <= '9') {
-					num = value - '0';
+					num = (uint8_t)(value - '0');
 				} else if(value >= 'A' && value <= 'F') {
-					num = (value - 'A') + 10; // NOLINT(readability-magic-numbers)
+					num = (uint8_t)(value - 'A') + 10; // NOLINT(readability-magic-numbers)
 				} else if(value >= 'a' && value <= 'f') {
-					num = (value - 'a') + 10; // NOLINT(readability-magic-numbers)
+					num = (uint8_t)(value - 'a') + 10; // NOLINT(readability-magic-numbers)
 				} else {
 					FREE_AT_END();
 					return new_json_parse_result_error(make_json_error_at(
@@ -1824,10 +1824,10 @@ NODISCARD static int8_t json_impl_escape_char_into(const Utf8Codepoint codepoint
 				return -1;
 			}
 
-			dst[2] = hex_buf[0];
-			dst[3] = hex_buf[1];
-			dst[4] = hex_buf[2];
-			dst[5] = hex_buf[3]; // NOLINT(readability-magic-numbers)
+			dst[2] = (uint8_t)hex_buf[0];
+			dst[3] = (uint8_t)hex_buf[1];
+			dst[4] = (uint8_t)hex_buf[2];
+			dst[5] = (uint8_t)hex_buf[3]; // NOLINT(readability-magic-numbers)
 
 			return 6; // NOLINT(readability-magic-numbers)
 		}
@@ -1879,7 +1879,7 @@ static tstr get_normalized_string_from_codepoints_json_escaped(JsonCharArr codep
 				return tstr_null();
 			}
 
-			current_size = current_size + result;
+			current_size = current_size + (uint8_t)result;
 		} else {
 
 			// needs place for 4  chars
@@ -1890,7 +1890,7 @@ static tstr get_normalized_string_from_codepoints_json_escaped(JsonCharArr codep
 				return tstr_null();
 			}
 
-			current_size = current_size + result;
+			current_size = current_size + (uint8_t)result;
 		}
 	}
 

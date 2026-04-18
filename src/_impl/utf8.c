@@ -20,7 +20,7 @@ NODISCARD Utf8DataResult get_utf8_string(const tstr_view str_view) {
 		return new_utf8_data_result_error(TSTR_STATIC_LIT("failed malloc"));
 	}
 
-	utf8proc_ssize_t result = utf8proc_decompose(
+	const utf8proc_ssize_t result = utf8proc_decompose(
 	    (const uint8_t*)str_view.data, (long)str_view.len, buffer, (long)str_view.len,
 	    (utf8proc_option_t)0); // NOLINT(cppcoreguidelines-narrowing-conversions,clang-analyzer-optin.core.EnumCastOutOfRange)
 
@@ -31,7 +31,7 @@ NODISCARD Utf8DataResult get_utf8_string(const tstr_view str_view) {
 
 	if(result != (utf8proc_ssize_t)str_view.len) {
 		// truncate the buffer
-		void* new_buffer = realloc(buffer, sizeof(utf8proc_int32_t) * result);
+		void* new_buffer = realloc(buffer, sizeof(utf8proc_int32_t) * (size_t)result);
 
 		if(!new_buffer) {
 			free(buffer);
@@ -42,7 +42,7 @@ NODISCARD Utf8DataResult get_utf8_string(const tstr_view str_view) {
 
 	const Utf8Data utf8_data = {
 		.data = buffer,
-		.size = result,
+		.size = (size_t)result,
 	};
 
 	return new_utf8_data_result_ok(utf8_data);
