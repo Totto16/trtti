@@ -3,6 +3,7 @@
 #include <tmap.h>
 #include <tvec.h>
 
+#include "./_impl/simple_regex.h"
 #include "./_impl/utils.h"
 
 #include <tstr_builder.h>
@@ -706,4 +707,35 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 	free_json_value(&final_value);
 
 	return result;
+}
+
+struct JsonSchemaRegexImpl {
+	SimpleRegex regex;
+};
+
+TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get(const char* const str) {
+	const tstr temp = tstr_from_static_cstr(str);
+	return json_schema_regex_get_tstr(&temp);
+}
+
+TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get_tstr(const tstr* const str) {
+
+	SimpleRegexResult result = simple_regex_compile(str);
+
+	if(result.is_error) {
+		tstr_free(&result.data.error);
+		return NULL;
+	}
+
+	const SimpleRegex regex = result.data.ok;
+
+	JsonSchemaRegex* const json_schema_regex = malloc(sizeof(JsonSchemaRegex));
+
+	if(json_schema_regex == NULL) {
+		return NULL;
+	}
+
+	json_schema_regex->regex = regex;
+
+	return json_schema_regex;
 }

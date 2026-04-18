@@ -50,7 +50,7 @@ TJSON_NODISCARD tstr_static json_schema_string_set_nonempty(JsonSchemaString* js
 TJSON_NODISCARD tstr_static json_schema_string_set_min(JsonSchemaString* json_schema_str,
                                                        size_t min);
 
-typedef struct JsonSchemaRegex* JsonSchemaRegex;
+typedef struct JsonSchemaRegexImpl JsonSchemaRegex;
 
 TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get(const char* str);
 
