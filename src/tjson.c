@@ -242,6 +242,10 @@ NODISCARD static JsonParseResult json_parse_impl_parse_null(JsonParseState* cons
 	return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("not null")));
 }
 
+// TODO(Totto): should we refcount this too?
+// if we use objects twice inside e.g. new_json_value_object we make a double free in the
+// freeing of the second ptr "reference"
+
 NODISCARD JsonObject* json_object_get_empty(void) {
 	JsonObject* const object = malloc(sizeof(JsonObject));
 

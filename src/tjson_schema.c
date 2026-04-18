@@ -686,6 +686,8 @@ static void free_json_schema_state(JsonSchemaState* const state) {
 
 		free_json_object(value.value.object);
 	}
+
+	TMAP_FREE(JsonDefEntryMapImpl, &(state->defs));
 }
 
 // TODO(Totto): use better return type (a variant xD) !
@@ -783,9 +785,13 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 				    defs, &schema_name, new_json_value_object(value.value.object));
 			}
 
-			insert_result = json_object_add_entry_cstr(root, "defs", new_json_value_object(defs));
+			insert_result = json_object_add_entry_cstr(root, "$defs", new_json_value_object(defs));
 
 			ASSERT(tstr_static_is_null(insert_result));
+
+			// as we "moved" all state->defs json_values into the new final value, we can clear it,
+			// so that it doesn't make problems
+			TMAP_CLEAR(JsonDefEntryMapImpl, &(state.defs));
 		}
 	}
 
