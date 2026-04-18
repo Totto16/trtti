@@ -13,17 +13,32 @@ typedef struct JsonSchemaArrayImpl JsonSchemaArray;
 
 typedef struct JsonSchemaStringImpl JsonSchemaString;
 
-typedef struct {
-	tstr value;
-} JsonSchemaLiteral;
-
-#define JSON_SCHEMA_LIT(val) ((JsonSchemaLiteral){ .value = TSTR_LIT(val) })
-
-void free_json_schema_literal(JsonSchemaLiteral* json_schema_lit);
+typedef struct JsonSchemaLiteralImpl JsonSchemaLiteral;
 
 typedef struct JsonSchemaOneOfImpl JsonSchemaOneOf;
 
 GENERATE_VARIANT_ALL_JSON_SCHEMA()
+
+// NOTE: why we need ref counting
+//  we construct raw json schema values like e.g. JsonSchemaObject* and we use it in many places,
+//  with new_json_schema_object, but this is done multiple times, but afterwards we free it, which
+//  results in multiple frees!
+// so RC / ref counting is the solution
+
+// NOTE: these are all types with RC  object, array, string, literal, one_of
+
+#define new_json_schema_object_rc(val) /* NOLINT(readability-identifier-naming)*/ \
+	new_json_schema_object(rc_json_schema_object(val))
+#define new_json_schema_array_rc(val) /* NOLINT(readability-identifier-naming)*/ \
+	new_json_schema_array(rc_json_schema_array(val))
+#define new_json_schema_string_rc(val) /* NOLINT(readability-identifier-naming)*/ \
+	new_json_schema_string(rc_json_schema_string(val))
+#define new_json_schema_literal_rc(val) /* NOLINT(readability-identifier-naming)*/ \
+	new_json_schema_literal(rc_json_schema_literal(val))
+#define new_json_schema_one_of_rc(val) /* NOLINT(readability-identifier-naming)*/ \
+	new_json_schema_one_of(rc_json_schema_one_of(val))
+
+#pragma GCC poison new_json_schema_object new_json_schema_array new_json_schema_string new_json_schema_literal new_json_schema_one_of
 
 TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* schema);
 
@@ -77,4 +92,18 @@ TJSON_NODISCARD tstr_static json_schema_one_of_add_entry(JsonSchemaOneOf* json_s
 
 void free_json_schema_one_of(JsonSchemaOneOf* json_schema_one_of);
 
+TJSON_NODISCARD JsonSchemaLiteral* json_schema_literal_get(tstr* value_moved);
+
+TJSON_NODISCARD JsonSchemaLiteral* json_schema_literal_get_dup(const tstr* value);
+
+void free_json_schema_literal(JsonSchemaLiteral* json_schema_lit);
+
 void free_json_schema(JsonSchema* json_schema);
+
+// ref count section
+
+TJSON_NODISCARD JsonSchemaObject* rc_json_schema_object(JsonSchemaObject* json_schema_object);
+TJSON_NODISCARD JsonSchemaArray* rc_json_schema_array(JsonSchemaArray* json_schema_array);
+TJSON_NODISCARD JsonSchemaString* rc_json_schema_string(JsonSchemaString* json_schema_string);
+TJSON_NODISCARD JsonSchemaLiteral* rc_json_schema_literal(JsonSchemaObject* json_schema_one_of);
+TJSON_NODISCARD JsonSchemaObject* rc_json_schema_one_of(JsonSchemaObject* json_schema_one_of);

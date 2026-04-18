@@ -1604,7 +1604,7 @@ _Pragma ("GCC poison _variant_tag_for_json_source_tag_member _variant_data_for_j
 	} _variant_impl_unnamed_struct_for_variant_json_schema_id_5_name_one_of_impl_; \
 \
 	typedef struct { \
-		JsonSchemaLiteral lit; \
+		JsonSchemaLiteral* lit; \
 	} _variant_impl_unnamed_struct_for_variant_json_schema_id_6_name_literal_impl_; \
 \
 	/* raw union for variant */ \
@@ -1843,7 +1843,7 @@ _Pragma ("GCC poison _variant_tag_for_json_source_tag_member _variant_data_for_j
 	} \
 \
 	JSON_VARIANTS_NODISCARD JSON_VARIANTS_MAYBE_UNUSED static inline JsonSchema \
-	new_json_schema_literal(JsonSchemaLiteral const lit) { \
+	new_json_schema_literal(JsonSchemaLiteral* const lit) { \
 		return (JsonSchema){ \
 			._variant_tag_for_json_schema_tag_member = JsonSchemaTypeLiteral, \
 			._variant_data_for_json_schema_data_member = \

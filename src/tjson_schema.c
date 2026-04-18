@@ -88,6 +88,10 @@ struct JsonSchemaStringImpl {
 	JsonSchemaStringProperties props;
 };
 
+struct JsonSchemaLiteralImpl {
+	tstr value;
+};
+
 struct JsonSchemaOneOfImpl {
 	JsonSchemaArrOfValuesImpl values;
 };
@@ -789,7 +793,7 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 }
 
 TJSON_NODISCARD JsonSchemaObject* json_schema_object_get(const bool allow_additional_properties) {
-	JsonSchemaObject* const object = malloc(sizeof(JsonSchemaObject));
+	JsonSchemaObject* const object = RC_ALLOC(JsonSchemaObject);
 
 	if(object == NULL) {
 		return NULL;
@@ -862,7 +866,7 @@ void free_json_schema_object(JsonSchemaObject* const json_schema_object) {
 	}
 
 	TMAP_FREE(JsonObjectEntryMapImpl, &(json_schema_object->map));
-	free(json_schema_object);
+	RC_FREE(json_schema_object);
 }
 
 static JsonSchemaArrayProperties empty_array_props_impl(void) {
@@ -878,7 +882,7 @@ static JsonSchemaArrayProperties empty_array_props_impl(void) {
 
 TJSON_NODISCARD JsonSchemaArray* json_schema_array_get(const JsonSchema items,
                                                        const bool require_unique_items) {
-	JsonSchemaArray* const array = malloc(sizeof(JsonSchemaArray));
+	JsonSchemaArray* const array = RC_ALLOC(JsonSchemaArray);
 
 	if(array == NULL) {
 		return NULL;
@@ -918,7 +922,7 @@ void free_json_schema_array(JsonSchemaArray* const json_schema_arr) {
 
 	free_json_schema(&(json_schema_arr->items));
 
-	free(json_schema_arr);
+	RC_FREE(json_schema_arr);
 }
 
 static JsonSchemaStringProperties empty_string_props_impl(void) {
@@ -934,7 +938,7 @@ static JsonSchemaStringProperties empty_string_props_impl(void) {
 }
 
 TJSON_NODISCARD JsonSchemaString* json_schema_string_get(void) {
-	JsonSchemaString* const string = malloc(sizeof(JsonSchemaString));
+	JsonSchemaString* const string = RC_ALLOC(JsonSchemaString);
 
 	if(string == NULL) {
 		return NULL;
@@ -973,9 +977,13 @@ TJSON_NODISCARD tstr_static json_schema_string_set_max(JsonSchemaString* const j
 }
 
 TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get(const char* const str) {
-	const tstr temp = tstr_from_static_cstr(str);
-	return json_schema_regex_get_tstr(&temp);
+	tstr temp = tstr_from(str);
+	JsonSchemaRegex* const result = json_schema_regex_get_tstr(&temp);
+	tstr_free(&temp);
+	return result;
 }
+
+// NOTE: JsonSchemaRegex is also RCd
 
 TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get_tstr(const tstr* const str) {
 
@@ -988,7 +996,7 @@ TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get_tstr(const tstr* const st
 
 	const SimpleRegex regex = result.data.ok;
 
-	JsonSchemaRegex* const json_schema_regex = malloc(sizeof(JsonSchemaRegex));
+	JsonSchemaRegex* const json_schema_regex = RC_MALLOC(JsonSchemaRegex);
 
 	if(json_schema_regex == NULL) {
 		return NULL;
@@ -1005,7 +1013,12 @@ void free_json_schema_regex(JsonSchemaRegex* const json_schema_regex) {
 	free_simple_regex(&(json_schema_regex->regex));
 	tstr_free(&(json_schema_regex->original));
 
-	free(json_schema_regex);
+	RC_FREE(json_schema_regex);
+}
+
+TJSON_NODISCARD static JsonSchemaRegex* rc_json_schema_regex(JsonSchemaRegex* regex) {
+	RC_INCREMENT(regex);
+	return regex;
 }
 
 TJSON_NODISCARD tstr_static json_schema_string_set_regex(JsonSchemaString* const json_schema_str,
@@ -1019,7 +1032,7 @@ TJSON_NODISCARD tstr_static json_schema_string_set_regex(JsonSchemaString* const
 		return TSTR_STATIC_LIT("string prop error: pattern already set!");
 	}
 
-	json_schema_str->props.pattern = regex;
+	json_schema_str->props.pattern = rc_json_schema_regex(regex);
 	json_schema_str->props.flags |= JsonSchemaStringPropertiesFlagsPattern;
 	return tstr_static_null();
 }
@@ -1030,11 +1043,11 @@ void free_json_schema_string(JsonSchemaString* const json_schema_string) {
 		free_json_schema_regex(json_schema_string->props.pattern);
 	}
 
-	free(json_schema_string);
+	RC_FREE(json_schema_string);
 }
 
 TJSON_NODISCARD JsonSchemaOneOf* json_schema_one_of_get_empty(void) {
-	JsonSchemaOneOf* const one_of = malloc(sizeof(JsonSchemaOneOf));
+	JsonSchemaOneOf* const one_of = RC_ALLOC(JsonSchemaOneOf);
 
 	if(one_of == NULL) {
 		return NULL;
@@ -1063,7 +1076,37 @@ void free_json_schema_one_of(JsonSchemaOneOf* const json_schema_one_of) {
 		free_json_schema(value);
 	}
 	TVEC_FREE(JsonSchema, &(json_schema_one_of->values));
-	free(json_schema_one_of);
+	RC_FREE(json_schema_one_of);
+}
+
+TJSON_NODISCARD static JsonSchemaLiteral* json_schema_literal_get_impl(tstr value) {
+	JsonSchemaLiteral* const literal = RC_ALLOC(JsonSchemaLiteral);
+
+	if(literal == NULL) {
+		return NULL;
+	}
+
+	literal->value = value;
+
+	return literal;
+}
+
+TJSON_NODISCARD JsonSchemaLiteral* json_schema_literal_get(tstr* value_moved) {
+	const tstr value = *value_moved;
+
+	return json_schema_literal_get_impl(value);
+}
+
+TJSON_NODISCARD JsonSchemaLiteral* json_schema_literal_get_dup(const tstr* value) {
+	const tstr value_dup = tstr_dup(value);
+
+	return json_schema_literal_get_impl(value_dup);
+}
+
+void free_json_schema_literal(JsonSchemaLiteral* const json_schema_lit) {
+	tstr_free(&(json_schema_lit->value));
+
+	RC_FREE(json_schema_lit);
 }
 
 void free_json_schema(JsonSchema* const json_schema) {
@@ -1097,7 +1140,7 @@ void free_json_schema(JsonSchema* const json_schema) {
 		break;
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_LITERAL_MUT(*json_schema) {
-			free_json_schema_literal(&(literal.lit));
+			free_json_schema_literal(literal.lit);
 		}
 		break;
 		VARIANT_CASE_END();
@@ -1110,6 +1153,28 @@ void free_json_schema(JsonSchema* const json_schema) {
 	*json_schema = new_json_schema_null();
 }
 
-void free_json_schema_literal(JsonSchemaLiteral* const json_schema_lit) {
-	tstr_free(&(json_schema_lit->value));
+TJSON_NODISCARD JsonSchemaObject*
+rc_json_schema_object(JsonSchemaObject* const json_schema_object) {
+	RC_INCREMENT(json_schema_object);
+	return json_schema_object;
+}
+
+TJSON_NODISCARD JsonSchemaArray* rc_json_schema_array(JsonSchemaArray* const json_schema_array) {
+	RC_INCREMENT(json_schema_array);
+	return json_schema_array;
+}
+
+TJSON_NODISCARD JsonSchemaString* rc_json_schema_string(JsonSchemaString* json_schema_string) {
+	RC_INCREMENT(json_schema_string);
+	return json_schema_string;
+}
+
+TJSON_NODISCARD JsonSchemaLiteral* rc_json_schema_literal(JsonSchemaObject* json_schema_one_of) {
+	RC_INCREMENT(json_schema_one_of);
+	return json_schema_one_of;
+}
+
+TJSON_NODISCARD JsonSchemaObject* rc_json_schema_one_of(JsonSchemaObject* json_schema_one_of) {
+	RC_INCREMENT(json_schema_one_of);
+	return json_schema_one_of;
 }
