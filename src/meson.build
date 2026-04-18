@@ -1,6 +1,7 @@
 src_files += files(
     '_impl/path.c',
     '_impl/path.h',
+    '_impl/ref_count.h',
     '_impl/simple_regex.c',
     '_impl/simple_regex.h',
     '_impl/utf8.c',
