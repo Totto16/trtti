@@ -3,10 +3,10 @@
 #include <tmap.h>
 #include <tvec.h>
 
-#include "./_impl/ref_count.h"
 #include "./_impl/simple_regex.h"
 #include "./_impl/utils.h"
 
+#include <trc.h>
 #include <tstr_builder.h>
 
 typedef struct {
@@ -144,9 +144,6 @@ NODISCARD MAYBE_UNUSED static inline JsonSchemaAddResult
 new_json_schema_add_result_ok(JsonDefId const ok) {
 	return (JsonSchemaAddResult){ .is_error = false, .data = { .ok = ok } };
 }
-
-#define RC_NODISCARD NODISCARD
-#define RC_MAYBE_UNUSED MAYBE_UNUSED
 
 struct JsonSchemaRegexImpl {
 	SimpleRegex regex;
