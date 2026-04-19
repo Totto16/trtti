@@ -5,6 +5,7 @@
 
 #include <math.h>
 #include <tmap.h>
+#include <trc.h>
 #include <tstr_builder.h>
 #include <tvec.h>
 #include <utf8proc.h>
@@ -39,7 +40,7 @@ struct JsonStringImpl {
 
 // keys can only be strings
 typedef struct {
-	JsonString string;
+	JsonString* string;
 } JsonObjectKey;
 
 /* NOLINTBEGIN(misc-use-internal-linkage,totto-function-passing-type,totto-const-correctness-c) */
@@ -49,12 +50,12 @@ TMAP_DEFINE_AND_IMPLEMENT_MAP_TYPE(JsonObjectKey, JsonObjectKeyName, JsonValue, 
 /* NOLINTEND(misc-use-internal-linkage,totto-function-passing-type,totto-const-correctness-c) */
 
 TMAP_HASH_FUNC_SIG(JsonObjectKey, JsonObjectKeyName) {
-	return TMAP_HASH_BYTES(TVEC_DATA_CONST(Utf8Codepoint, &key.string.value),
-	                       TVEC_LENGTH(Utf8Codepoint, key.string.value));
+	return TMAP_HASH_BYTES(TVEC_DATA_CONST(Utf8Codepoint, &(key.string->value)),
+	                       TVEC_LENGTH(Utf8Codepoint, key.string->value));
 }
 
 TMAP_EQ_FUNC_SIG(JsonObjectKey, JsonObjectKeyName) {
-	return json_string_eq(&key1.string, &key2.string);
+	return json_string_eq(key1.string, key2.string);
 }
 
 typedef TMAP_TYPENAME_MAP(JsonValueMapImpl) JsonValueMap;
@@ -62,6 +63,10 @@ typedef TMAP_TYPENAME_MAP(JsonValueMapImpl) JsonValueMap;
 struct JsonObjectImpl {
 	JsonValueMap value;
 };
+
+RC_DEFINE_TYPE(JsonObject)
+RC_DEFINE_TYPE(JsonArray)
+RC_DEFINE_TYPE(JsonString)
 
 static void tstr_view_advance_by(tstr_view* const str, size_t amount) {
 	assert(str->len >= amount); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
@@ -242,12 +247,25 @@ NODISCARD static JsonParseResult json_parse_impl_parse_null(JsonParseState* cons
 	return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("not null")));
 }
 
-// TODO(Totto): should we refcount this too?
-// if we use objects twice inside e.g. new_json_value_object we make a double free in the
-// freeing of the second ptr "reference"
+static void free_json_key(JsonObjectKey* key);
+
+static void json_object_destroy_impl(JsonObject* const json_obj) { // NOLINT(misc-no-recursion)
+	TMAP_TYPENAME_ITER(JsonValueMapImpl)
+	iter = TMAP_ITER_INIT(JsonValueMapImpl, &(json_obj->value));
+
+	TMAP_TYPENAME_ENTRY(JsonValueMapImpl) value;
+
+	while(TMAP_ITER_NEXT(JsonValueMapImpl, &iter, &value)) {
+
+		free_json_value(&value.value);
+		free_json_key(&value.key);
+	}
+
+	TMAP_FREE(JsonValueMapImpl, &(json_obj->value));
+}
 
 NODISCARD JsonObject* json_object_get_empty(void) {
-	JsonObject* const object = malloc(sizeof(JsonObject));
+	JsonObject* const object = RC_MALLOC(JsonObject, json_object_destroy_impl);
 
 	if(object == NULL) {
 		return NULL;
@@ -280,19 +298,12 @@ NODISCARD static tstr_static json_object_add_entry_impl(JsonObject* const json_o
 	}
 }
 
-NODISCARD static JsonObjectKey release_json_string_into_object_key(JsonString** const string) {
-
-	const JsonObjectKey result = { .string = **string };
-
-	free(*string);
-
-	*string = NULL;
-
-	return result;
+static void json_string_destroy_impl(JsonString* const json_string) {
+	TVEC_FREE(Utf8Codepoint, &(json_string->value));
 }
 
 NODISCARD static JsonString* get_empty_json_string_impl(void) {
-	JsonString* const string = malloc(sizeof(JsonString));
+	JsonString* const string = RC_MALLOC(JsonString, json_string_destroy_impl);
 
 	if(string == NULL) {
 		return NULL;
@@ -305,44 +316,30 @@ NODISCARD static JsonString* get_empty_json_string_impl(void) {
 NODISCARD tstr_static json_object_add_entry(JsonObject* const json_object,
                                             JsonString** const key_moved, const JsonValue value) {
 
-	const JsonObjectKey key = release_json_string_into_object_key(key_moved);
+	const JsonObjectKey key = { .string = *key_moved };
+
+	*key_moved = NULL;
 
 	return json_object_add_entry_impl(json_object, key, value);
 }
 
-static JsonString* json_string_dup_impl(const JsonString* const value) {
+NODISCARD tstr_static json_object_add_entry_dup(JsonObject* const json_object,
+                                                JsonString* const key, const JsonValue value) {
 
-	JsonString* new_vec = get_empty_json_string_impl();
+	const JsonObjectKey key_dup = { .string = RC_ACQUIRE(JsonString, key) };
 
-	if(new_vec == NULL) {
-		return NULL;
-	}
-
-	TvecResult result = TVEC_COPY(Utf8Codepoint, &(value->value), &(new_vec->value));
-
-	ASSERT(result == TvecResultOk);
-
-	return new_vec;
+	return json_object_add_entry_impl(json_object, key_dup, value);
 }
 
-TJSON_NODISCARD tstr_static json_object_add_entry_dup(JsonObject* const json_object,
-                                                      const JsonString* const key,
-                                                      const JsonValue value) {
-
-	JsonString* key_moved = json_string_dup_impl(key);
-
-	return json_object_add_entry(json_object, &key_moved, value);
-}
-
-NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* const json_object, const tstr* key,
-                                                 const JsonValue value) {
+NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* const json_object,
+                                                 const tstr* const key, const JsonValue value) {
 	JsonString* key_string = json_get_string_from_tstr(key);
 
 	if(key_string == NULL) {
 		return TSTR_STATIC_LIT("OOM");
 	}
 
-	return json_object_add_entry(json_object, &key_string, value);
+	return json_object_add_entry_dup(json_object, key_string, value);
 }
 
 NODISCARD tstr_static json_object_add_entry_cstr(JsonObject* json_object, const char* key,
@@ -353,7 +350,7 @@ NODISCARD tstr_static json_object_add_entry_cstr(JsonObject* json_object, const 
 		return TSTR_STATIC_LIT("OOM");
 	}
 
-	return json_object_add_entry(json_object, &key_string, value);
+	return json_object_add_entry_dup(json_object, key_string, value);
 }
 
 NODISCARD static inline JsonError json_error_none(const JsonSourceLocation loc) {
@@ -367,8 +364,6 @@ NODISCARD static bool json_error_is_none(const JsonError error) {
 NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* state);
 
 NODISCARD static JsonParseResult json_parse_impl_parse_value(JsonParseState* state);
-
-static void free_json_key(JsonObjectKey* key);
 
 NODISCARD static JsonError
 json_parse_impl_parse_object_member(JsonParseState* const state, // NOLINT(misc-no-recursion)
@@ -443,16 +438,13 @@ json_parse_impl_parse_object_member(JsonParseState* const state, // NOLINT(misc-
 	JsonValue value = json_parse_result_get_as_ok(value_result);
 
 #undef FREE_AT_END
-
-	JsonObjectKey correct_key = release_json_string_into_object_key(&key);
-
 #define FREE_AT_END() \
 	do { \
-		free_json_key(&correct_key); \
+		free_json_string(key); \
 		free_json_value(&value); \
 	} while(false)
 
-	const tstr_static add_result = json_object_add_entry_impl(json_object, correct_key, value);
+	const tstr_static add_result = json_object_add_entry_dup(json_object, key, value);
 
 	if(!tstr_static_is_null(add_result)) {
 
@@ -535,7 +527,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
 		}
 
-		return new_json_parse_result_ok(new_json_value_object(object));
+		return new_json_parse_result_ok(new_json_value_object_rc(object));
 	}
 
 	JsonObject* const object = json_object_get_empty();
@@ -579,7 +571,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 
 				json_parse_impl_skip_ws(state);
 
-				return new_json_parse_result_ok(new_json_value_object(object));
+				return new_json_parse_result_ok(new_json_value_object_rc(object));
 			}
 
 			if(end_char != ',') {
@@ -608,8 +600,16 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 
 #undef FREE_AT_END
 
+static void json_array_destroy_impl(JsonArray* const json_arr) { // NOLINT(misc-no-recursion)
+	for(size_t i = 0; i < TVEC_LENGTH(JsonValue, json_arr->value); ++i) {
+		JsonValue* const value = TVEC_GET_AT_MUT(JsonValue, &(json_arr->value), i);
+		free_json_value(value);
+	}
+	TVEC_FREE(JsonValue, &(json_arr->value));
+}
+
 NODISCARD JsonArray* json_array_get_empty(void) {
-	JsonArray* const array = malloc(sizeof(JsonArray));
+	JsonArray* const array = RC_MALLOC(JsonArray, json_array_destroy_impl);
 
 	if(array == NULL) {
 		return NULL;
@@ -732,7 +732,7 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
 		}
 
-		return new_json_parse_result_ok(new_json_value_array(array));
+		return new_json_parse_result_ok(new_json_value_array_rc(array));
 	}
 
 	JsonArray* const array = json_array_get_empty();
@@ -776,7 +776,7 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 
 				json_parse_impl_skip_ws(state);
 
-				return new_json_parse_result_ok(new_json_value_array(array));
+				return new_json_parse_result_ok(new_json_value_array_rc(array));
 			}
 
 			if(end_char != ',') {
@@ -1471,7 +1471,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 		}
 	}
 
-	return new_json_parse_result_ok(new_json_value_string(string));
+	return new_json_parse_result_ok(new_json_value_string_rc(string));
 }
 
 #undef FREE_AT_END
@@ -1607,46 +1607,20 @@ NODISCARD JsonParseResult json_value_parse_from_file(const tstr* const file_path
 	return json_value_parse_from_str_impl(state);
 }
 
-static void free_json_string_impl(JsonString* const json_string) {
-	TVEC_FREE(Utf8Codepoint, &(json_string->value));
-}
-
-static void free_json_string_malloced(JsonString* const json_string) {
-	free_json_string_impl(json_string);
-	free(json_string);
-}
-
 void free_json_string(JsonString* const json_string) {
-	free_json_string_malloced(json_string);
+	RC_RELEASE(JsonString, json_string);
 }
 
 static void free_json_key(JsonObjectKey* const key) {
-	free_json_string_impl(&(key->string));
+	free_json_string(key->string);
 }
 
 void free_json_object(JsonObject* const json_obj) { // NOLINT(misc-no-recursion)
-	TMAP_TYPENAME_ITER(JsonValueMapImpl)
-	iter = TMAP_ITER_INIT(JsonValueMapImpl, &(json_obj->value));
-
-	TMAP_TYPENAME_ENTRY(JsonValueMapImpl) value;
-
-	while(TMAP_ITER_NEXT(JsonValueMapImpl, &iter, &value)) {
-
-		free_json_value(&value.value);
-		free_json_key(&value.key);
-	}
-
-	TMAP_FREE(JsonValueMapImpl, &(json_obj->value));
-	free(json_obj);
+	RC_RELEASE(JsonObject, json_obj);
 }
 
 void free_json_array(JsonArray* const json_arr) { // NOLINT(misc-no-recursion)
-	for(size_t i = 0; i < TVEC_LENGTH(JsonValue, json_arr->value); ++i) {
-		JsonValue* const value = TVEC_GET_AT_MUT(JsonValue, &(json_arr->value), i);
-		free_json_value(value);
-	}
-	TVEC_FREE(JsonValue, &(json_arr->value));
-	free(json_arr);
+	RC_RELEASE(JsonArray, json_arr);
 }
 
 void free_json_value(JsonValue* const json_value) { // NOLINT(misc-no-recursion)
@@ -2032,9 +2006,9 @@ json_to_string_object_impl(StringBuilder* const string_builder, // NOLINT(misc-n
 		json_to_string_string_impl(string_builder, key, options);
 		string_builder_append_tstr_static(string_builder, TSTR_STATIC_LIT(": "));
 
-		const JsonValue* const value = json_object_entry_get_value(next_entry);
+		const JsonValue value = json_object_entry_get_value(next_entry);
 
-		json_to_string_variant_impl(string_builder, value, options);
+		json_to_string_variant_impl(string_builder, &value, options);
 	}
 
 	string_builder_append_tstr(string_builder, &end_str);
@@ -2151,19 +2125,58 @@ struct JsonObjectEntryImpl {
 	TMAP_TYPENAME_ENTRY(JsonValueMapImpl) value;
 };
 
+NODISCARD static JsonValue rc_json_value(const JsonValue json_value) {
+	SWITCH_JSON_VALUE(json_value) {
+		CASE_JSON_VALUE_IS_OBJECT_CONST(json_value) {
+			return new_json_value_object_rc(object.obj);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_VALUE_IS_ARRAY_CONST(json_value) {
+			return new_json_value_array_rc(array.arr);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_VALUE_IS_NUMBER_IGN() {
+			return json_value;
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_VALUE_IS_STRING_CONST(json_value) {
+			return new_json_value_string_rc(string);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_VALUE_IS_BOOLEAN_IGN() {
+			return json_value;
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_VALUE_IS_NULL() {
+			return json_value;
+		}
+		VARIANT_CASE_END();
+		default: {
+			UNREACHABLE();
+		}
+	}
+}
+
+TJSON_NODISCARD tstr_static json_object_add_entry_by_other_entry(
+    JsonObject* const json_object, const JsonObjectEntry* const entry) {
+	const JsonValue duped_value = rc_json_value(entry->value.value);
+	return json_object_add_entry_dup(json_object, entry->value.key.string, duped_value);
+}
+
 NODISCARD const JsonObjectEntry* json_object_get_entry_by_key(const JsonObject* const object,
-                                                              const JsonString* const key) {
+                                                              JsonString* const key) {
 
 	if(key == NULL) {
 		return NULL;
 	}
 
-	const JsonObjectKey correct_key = { .string = *key };
+	const JsonObjectKey correct_key = { .string = key };
 
 	const TMAP_TYPENAME_ENTRY(JsonValueMapImpl)* const result =
 	    TMAP_GET_ENTRY(JsonValueMapImpl, &(object->value), correct_key);
 
 	// as this struct has only one member, it is safe to cast this
+	static_assert(offsetof(JsonObjectEntry, value) == 0);
 	return (const JsonObjectEntry*)result;
 }
 
@@ -2205,14 +2218,20 @@ NODISCARD const JsonString* json_object_entry_get_key(const JsonObjectEntry* con
 	const TMAP_TYPENAME_ENTRY(JsonValueMapImpl)* const entry =
 	    (const TMAP_TYPENAME_ENTRY(JsonValueMapImpl)*)object_entry;
 
-	return &(entry->key.string);
+	return entry->key.string;
 }
 
-NODISCARD const JsonValue* json_object_entry_get_value(const JsonObjectEntry* const object_entry) {
+NODISCARD JsonValue json_object_entry_get_value(const JsonObjectEntry* const object_entry) {
 	const TMAP_TYPENAME_ENTRY(JsonValueMapImpl)* const entry =
 	    (const TMAP_TYPENAME_ENTRY(JsonValueMapImpl)*)object_entry;
 
-	return &(entry->value);
+	return entry->value;
+}
+
+TJSON_NODISCARD const JsonObjectEntry*
+json_object_get_entry_by_other_entry(const JsonObject* const object,
+                                     const JsonObjectEntry* const entry) {
+	return json_object_get_entry_by_key(object, entry->value.key.string);
 }
 
 NODISCARD JsonString* json_get_string_from_cstr(const char* cstr) {
@@ -2313,4 +2332,16 @@ NODISCARD tstr json_format_error(const JsonError error) {
 	json_format_source_location_impl(string_builder, error.loc);
 
 	return string_builder_release_into_tstr(&string_builder);
+}
+
+TJSON_NODISCARD JsonObject* rc_json_value_object(JsonObject* const json_value_object) {
+	return RC_ACQUIRE(JsonObject, json_value_object);
+}
+
+TJSON_NODISCARD JsonArray* rc_json_value_array(JsonArray* const json_value_array) {
+	return RC_ACQUIRE(JsonArray, json_value_array);
+}
+
+TJSON_NODISCARD JsonString* rc_json_value_string(JsonString* const json_value_string) {
+	return RC_ACQUIRE(JsonString, json_value_string);
 }

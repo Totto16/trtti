@@ -213,7 +213,7 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 
 	{ // basic properties
 		tstr_static insert_result = json_object_add_entry_cstr(
-		    root, "type", new_json_value_string(json_get_string_from_cstr("object")));
+		    root, "type", new_json_value_string_rc(json_get_string_from_cstr("object")));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -269,15 +269,15 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 
 				tstr_static insert_result = json_object_add_entry_cstr(
 				    entry_obj, "$ref",
-				    new_json_value_string(json_get_string_from_tstr(&schema_def_name)));
+				    new_json_value_string_rc(json_get_string_from_tstr(&schema_def_name)));
 
 				if(!tstr_static_is_null(insert_result)) {
 					return new_json_schema_add_result_error(insert_result);
 				}
 			}
 
-			tstr_static insert_result =
-			    json_object_add_entry_tstr(properties_obj, &key, new_json_value_object(entry_obj));
+			tstr_static insert_result = json_object_add_entry_tstr(
+			    properties_obj, &key, new_json_value_object_rc(entry_obj));
 
 			if(!tstr_static_is_null(insert_result)) {
 				return new_json_schema_add_result_error(insert_result);
@@ -285,7 +285,7 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 
 			if(obj_value.required) {
 				insert_result = json_array_add_entry(
-				    required_arr, new_json_value_string(json_get_string_from_tstr(&key)));
+				    required_arr, new_json_value_string_rc(json_get_string_from_tstr(&key)));
 
 				if(!tstr_static_is_null(insert_result)) {
 					return new_json_schema_add_result_error(insert_result);
@@ -299,7 +299,7 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 		if(json_array_size(required_arr) > 0) {
 
 			tstr_static insert_result =
-			    json_object_add_entry_cstr(root, "required", new_json_value_array(required_arr));
+			    json_object_add_entry_cstr(root, "required", new_json_value_array_rc(required_arr));
 
 			if(!tstr_static_is_null(insert_result)) {
 				return new_json_schema_add_result_error(insert_result);
@@ -308,8 +308,8 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 			free_json_array(required_arr);
 		}
 
-		tstr_static insert_result =
-		    json_object_add_entry_cstr(root, "properties", new_json_value_object(properties_obj));
+		tstr_static insert_result = json_object_add_entry_cstr(
+		    root, "properties", new_json_value_object_rc(properties_obj));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -329,7 +329,7 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaS
 
 	{
 		tstr_static insert_result = json_object_add_entry_cstr(
-		    root, "type", new_json_value_string(json_get_string_from_cstr("array")));
+		    root, "type", new_json_value_string_rc(json_get_string_from_cstr("array")));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -366,7 +366,7 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaS
 
 			tstr_static insert_result = json_object_add_entry_cstr(
 			    entry_obj, "$ref",
-			    new_json_value_string(json_get_string_from_tstr(&schema_def_name)));
+			    new_json_value_string_rc(json_get_string_from_tstr(&schema_def_name)));
 
 			if(!tstr_static_is_null(insert_result)) {
 				return new_json_schema_add_result_error(insert_result);
@@ -374,7 +374,7 @@ json_schema_to_string_array_impl(const JsonSchemaArray* const array, JsonSchemaS
 		}
 
 		tstr_static insert_result =
-		    json_object_add_entry_cstr(root, "items", new_json_value_object(entry_obj));
+		    json_object_add_entry_cstr(root, "items", new_json_value_object_rc(entry_obj));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -426,7 +426,7 @@ json_schema_to_string_number_impl(JsonSchemaState* const state) {
 
 	{
 		tstr_static insert_result = json_object_add_entry_cstr(
-		    root, "type", new_json_value_string(json_get_string_from_cstr("number")));
+		    root, "type", new_json_value_string_rc(json_get_string_from_cstr("number")));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -448,7 +448,7 @@ json_schema_to_string_string_impl(const JsonSchemaString* const string,
 
 	{
 		tstr_static insert_result = json_object_add_entry_cstr(
-		    root, "type", new_json_value_string(json_get_string_from_cstr("string")));
+		    root, "type", new_json_value_string_rc(json_get_string_from_cstr("string")));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -485,9 +485,10 @@ json_schema_to_string_string_impl(const JsonSchemaString* const string,
 
 			assert(string_props.pattern != NULL);
 
-			tstr_static insert_result = json_object_add_entry_cstr(
-			    root, "pattern",
-			    new_json_value_string(json_get_string_from_tstr(&string_props.pattern->original)));
+			tstr_static insert_result =
+			    json_object_add_entry_cstr(root, "pattern",
+			                               new_json_value_string_rc(json_get_string_from_tstr(
+			                                   &string_props.pattern->original)));
 
 			if(!tstr_static_is_null(insert_result)) {
 				return new_json_schema_add_result_error(insert_result);
@@ -508,7 +509,7 @@ json_schema_to_string_boolean_impl(JsonSchemaState* const state) {
 
 	{
 		tstr_static insert_result = json_object_add_entry_cstr(
-		    root, "type", new_json_value_string(json_get_string_from_cstr("boolean")));
+		    root, "type", new_json_value_string_rc(json_get_string_from_cstr("boolean")));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -528,7 +529,7 @@ json_schema_to_string_null_impl(JsonSchemaState* const state) {
 
 	{
 		tstr_static insert_result = json_object_add_entry_cstr(
-		    root, "type", new_json_value_string(json_get_string_from_cstr("null")));
+		    root, "type", new_json_value_string_rc(json_get_string_from_cstr("null")));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -572,7 +573,7 @@ json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
 
 				tstr_static insert_result = json_object_add_entry_cstr(
 				    entry_obj, "$ref",
-				    new_json_value_string(json_get_string_from_tstr(&schema_def_name)));
+				    new_json_value_string_rc(json_get_string_from_tstr(&schema_def_name)));
 
 				if(!tstr_static_is_null(insert_result)) {
 					return new_json_schema_add_result_error(insert_result);
@@ -580,7 +581,7 @@ json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
 			}
 
 			tstr_static insert_result =
-			    json_array_add_entry(one_of_arr, new_json_value_object(entry_obj));
+			    json_array_add_entry(one_of_arr, new_json_value_object_rc(entry_obj));
 
 			if(!tstr_static_is_null(insert_result)) {
 				return new_json_schema_add_result_error(insert_result);
@@ -590,7 +591,7 @@ json_schema_to_string_one_of_impl(const JsonSchemaOneOf* const one_of,
 
 	{
 		tstr_static insert_result =
-		    json_object_add_entry_cstr(root, "oneOf", new_json_value_array(one_of_arr));
+		    json_object_add_entry_cstr(root, "oneOf", new_json_value_array_rc(one_of_arr));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -612,14 +613,14 @@ json_schema_to_string_literal_impl(const JsonSchemaLiteral* const literal,
 
 	{
 		tstr_static insert_result = json_object_add_entry_cstr(
-		    root, "type", new_json_value_string(json_get_string_from_cstr("string")));
+		    root, "type", new_json_value_string_rc(json_get_string_from_cstr("string")));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
 		}
 
 		insert_result = json_object_add_entry_cstr(
-		    root, "const", new_json_value_string(json_get_string_from_tstr(&(literal->value))));
+		    root, "const", new_json_value_string_rc(json_get_string_from_tstr(&(literal->value))));
 
 		if(!tstr_static_is_null(insert_result)) {
 			return new_json_schema_add_result_error(insert_result);
@@ -710,7 +711,7 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 	{
 		tstr_static insert_result =
 		    json_object_add_entry_cstr(root, "$schema",
-		                               new_json_value_string(json_get_string_from_cstr(
+		                               new_json_value_string_rc(json_get_string_from_cstr(
 		                                   "https://json-schema.org/draft/2020-12/schema")));
 
 		ASSERT(tstr_static_is_null(insert_result));
@@ -745,11 +746,7 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 					return tstr_null();
 				}
 
-				const JsonValue* const value = json_object_entry_get_value(entry);
-
-				ASSERT(value != NULL);
-
-				insert_result = json_object_add_entry_dup(root, key, *value);
+				insert_result = json_object_add_entry_by_other_entry(root, entry);
 
 				ASSERT(tstr_static_is_null(insert_result));
 			}
@@ -757,6 +754,9 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 			json_object_free_iterator(iter);
 			free_json_string(invalid_start_char);
 		}
+
+		// TODO: check if this works as expected
+		free_json_object(root_properties->object);
 
 		// remove that entry
 
@@ -779,10 +779,11 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 				const tstr schema_name = json_schema_impl_get_schema_name(def_id);
 
 				insert_result = json_object_add_entry_tstr(
-				    defs, &schema_name, new_json_value_object(value.value.object));
+				    defs, &schema_name, new_json_value_object_rc(value.value.object));
 			}
 
-			insert_result = json_object_add_entry_cstr(root, "$defs", new_json_value_object(defs));
+			insert_result =
+			    json_object_add_entry_cstr(root, "$defs", new_json_value_object_rc(defs));
 
 			ASSERT(tstr_static_is_null(insert_result));
 
@@ -792,7 +793,7 @@ TJSON_NODISCARD tstr json_schema_to_string(const JsonSchema* const schema) {
 		}
 	}
 
-	JsonValue final_value = new_json_value_object(root);
+	JsonValue final_value = new_json_value_object_rc(root);
 	const tstr result = json_value_to_string(&final_value);
 
 	if(tstr_is_null(&result)) {
@@ -1196,14 +1197,16 @@ TJSON_NODISCARD JsonSchemaArray* rc_json_schema_array(JsonSchemaArray* const jso
 	return RC_ACQUIRE(JsonSchemaArray, json_schema_array);
 }
 
-TJSON_NODISCARD JsonSchemaString* rc_json_schema_string(JsonSchemaString* json_schema_string) {
+TJSON_NODISCARD JsonSchemaString*
+rc_json_schema_string(JsonSchemaString* const json_schema_string) {
 	return RC_ACQUIRE(JsonSchemaString, json_schema_string);
 }
 
-TJSON_NODISCARD JsonSchemaLiteral* rc_json_schema_literal(JsonSchemaLiteral* json_schema_literal) {
+TJSON_NODISCARD JsonSchemaLiteral*
+rc_json_schema_literal(JsonSchemaLiteral* const json_schema_literal) {
 	return RC_ACQUIRE(JsonSchemaLiteral, json_schema_literal);
 }
 
-TJSON_NODISCARD JsonSchemaOneOf* rc_json_schema_one_of(JsonSchemaOneOf* json_schema_one_of) {
+TJSON_NODISCARD JsonSchemaOneOf* rc_json_schema_one_of(JsonSchemaOneOf* const json_schema_one_of) {
 	return RC_ACQUIRE(JsonSchemaOneOf, json_schema_one_of);
 }

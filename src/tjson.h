@@ -123,6 +123,17 @@ typedef struct {
 // GCOVR_EXCL_START (external library)
 GENERATE_VARIANT_ALL_JSON_VALUE()
 
+// NOTE: these are all types with RC  object, array, string
+
+#define new_json_value_object_rc(val) /* NOLINT(readability-identifier-naming)*/ \
+	new_json_value_object(rc_json_value_object(val))
+#define new_json_value_array_rc(val) /* NOLINT(readability-identifier-naming)*/ \
+	new_json_value_array(rc_json_value_array(val))
+#define new_json_value_string_rc(val) /* NOLINT(readability-identifier-naming)*/ \
+	new_json_value_string(rc_json_value_string(val))
+
+#pragma GCC poison new_json_value_object new_json_value_array new_json_value_string
+
 GENERATE_VARIANT_ALL_JSON_PARSE_RESULT()
 // GCOVR_EXCL_STOP
 
@@ -160,7 +171,7 @@ TJSON_NODISCARD size_t json_object_count(const JsonObject* object);
 typedef struct JsonObjectEntryImpl JsonObjectEntry;
 
 TJSON_NODISCARD const JsonObjectEntry* json_object_get_entry_by_key(const JsonObject* object,
-                                                                    const JsonString* key);
+                                                                    JsonString* key);
 
 typedef struct JsonObjectIterImpl JsonObjectIter;
 
@@ -172,7 +183,10 @@ void json_object_free_iterator(JsonObjectIter* iter);
 
 TJSON_NODISCARD const JsonString* json_object_entry_get_key(const JsonObjectEntry* object_entry);
 
-TJSON_NODISCARD const JsonValue* json_object_entry_get_value(const JsonObjectEntry* object_entry);
+TJSON_NODISCARD JsonValue json_object_entry_get_value(const JsonObjectEntry* object_entry);
+
+TJSON_NODISCARD const JsonObjectEntry*
+json_object_get_entry_by_other_entry(const JsonObject* object, const JsonObjectEntry* entry);
 
 // create functions
 
@@ -195,8 +209,11 @@ TJSON_NODISCARD JsonObject* json_object_get_empty(void);
 TJSON_NODISCARD tstr_static json_object_add_entry(JsonObject* json_object, JsonString** key_moved,
                                                   JsonValue value);
 
-TJSON_NODISCARD tstr_static json_object_add_entry_dup(JsonObject* json_object,
-                                                      const JsonString* key, JsonValue value);
+TJSON_NODISCARD tstr_static json_object_add_entry_dup(JsonObject* json_object, JsonString* key,
+                                                      JsonValue value);
+
+TJSON_NODISCARD tstr_static json_object_add_entry_by_other_entry(JsonObject* json_object,
+                                                                 const JsonObjectEntry* entry);
 
 TJSON_NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* json_object, const tstr* key,
                                                        JsonValue value);
@@ -215,6 +232,14 @@ TJSON_NODISCARD bool json_source_location_is_null(JsonSourceLocation location);
 TJSON_NODISCARD tstr json_format_source_location(JsonSourceLocation location);
 
 TJSON_NODISCARD tstr json_format_error(JsonError error);
+
+// ref count section
+
+TJSON_NODISCARD JsonObject* rc_json_value_object(JsonObject* json_value_object);
+
+TJSON_NODISCARD JsonArray* rc_json_value_array(JsonArray* json_value_array);
+
+TJSON_NODISCARD JsonString* rc_json_value_string(JsonString* json_value_string);
 
 #ifdef __cplusplus
 }

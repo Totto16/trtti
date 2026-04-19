@@ -105,7 +105,11 @@ void free_json_schema(JsonSchema* json_schema);
 // ref count section
 
 TJSON_NODISCARD JsonSchemaObject* rc_json_schema_object(JsonSchemaObject* json_schema_object);
+
 TJSON_NODISCARD JsonSchemaArray* rc_json_schema_array(JsonSchemaArray* json_schema_array);
+
 TJSON_NODISCARD JsonSchemaString* rc_json_schema_string(JsonSchemaString* json_schema_string);
+
 TJSON_NODISCARD JsonSchemaLiteral* rc_json_schema_literal(JsonSchemaLiteral* json_schema_literal);
+
 TJSON_NODISCARD JsonSchemaOneOf* rc_json_schema_one_of(JsonSchemaOneOf* json_schema_one_of);
