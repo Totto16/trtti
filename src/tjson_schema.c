@@ -1373,9 +1373,28 @@ NODISCARD static tstr
 json_schema_validate_literal_schema_data_impl(const JsonSchemaLiteral* json_schema_literal,
                                               const JsonString* const value) {
 
-	UNUSED(json_schema_literal);
-	UNUSED(value);
-	return TSTR_LIT("TODO");
+	tstr value_str = json_string_get_as_str(value);
+
+	if(tstr_is_null(&value_str)) {
+		return TSTR_LIT("ERROR: JsonString serialization error");
+	}
+
+	const bool matches = tstr_eq(&value_str, &(json_schema_literal->value));
+
+	if(!matches) {
+		tstr error;
+		FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+		            , "string '" TSTR_FMT "' doesn't match literal '" TSTR_FMT "'",
+		            TSTR_FMT_ARGS(value_str), TSTR_FMT_ARGS((json_schema_literal->value)));
+
+		tstr_free(&value_str);
+
+		return error;
+	}
+
+	tstr_free(&value_str);
+
+	return tstr_null();
 }
 
 NODISCARD static tstr
