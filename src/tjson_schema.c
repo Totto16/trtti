@@ -1207,13 +1207,75 @@ json_schema_validate_object_schema_raw_impl(const JsonSchemaObject* json_schema_
 	return TSTR_LIT("JsonValue is not an object");
 }
 
+#define FORMAT_TSTR(tstr_res, statement, format, ...) \
+	do { \
+		char* buf = NULL; \
+		FORMAT_STRING(&buf, statement, format, __VA_ARGS__); \
+		tstr_res = tstr_own_cstr(buf); \
+	} while(false)
+
 NODISCARD static tstr
 json_schema_validate_array_schema_data_impl(const JsonSchemaArray* json_schema_array,
                                             const JsonArray* const value) {
 
-	UNUSED(json_schema_array);
-	UNUSED(value);
-	return TSTR_LIT("TODO");
+	const JsonSchemaArrayProperties array_props = json_schema_array->props;
+
+	if(HAS_FLAG(array_props.flags, JsonSchemaArrayPropertiesFlagsMin)) {
+
+		const size_t min_items = array_props.min_items;
+
+		const size_t size = json_array_get_size(value);
+
+		if(min_items < size) {
+			tstr error;
+			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+			            , "array length (%zu) is smaller than the min length (%zu)", size,
+			            min_items);
+			return error;
+		}
+
+		// fall through to the next checks
+	}
+
+	if(HAS_FLAG(array_props.flags, JsonSchemaArrayPropertiesFlagsMax)) {
+
+		const size_t max_items = array_props.max_items;
+
+		const size_t size = json_array_get_size(value);
+
+		if(max_items > size) {
+			tstr error;
+			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+			            , "array length (%zu) is larger than the max length (%zu)", size,
+			            max_items);
+			return error;
+		}
+
+		// fall through to the next checks
+	}
+
+	// TODO: require_unique_items is not checked yet!
+
+	const size_t array_size = json_array_get_size(value);
+
+	for(size_t i = 0; i < array_size; ++i) {
+
+		const JsonValue* const sub_value = json_array_get_at(value, i);
+
+		if(sub_value == NULL) {
+			return TSTR_LIT(
+			    "ERROR: JsonArray implementation error: get at known good index failed");
+		}
+
+		tstr subschema_result = json_schema_validate_data(&(json_schema_array->items), sub_value);
+
+		if(!tstr_is_null(&subschema_result)) {
+			// TODO: here we should add more details, that it was on an array at index i
+			return subschema_result;
+		}
+	}
+
+	return tstr_null();
 }
 
 NODISCARD static tstr
@@ -1233,13 +1295,6 @@ NODISCARD static tstr json_schema_validate_number_schema_raw_impl(const JsonValu
 
 	return TSTR_LIT("JsonValue is not a number");
 }
-
-#define FORMAT_TSTR(tstr_res, statement, format, ...) \
-	do { \
-		char* buf = NULL; \
-		FORMAT_STRING(&buf, statement, format, __VA_ARGS__); \
-		tstr_res = tstr_own_cstr(buf); \
-	} while(false)
 
 NODISCARD static tstr
 json_schema_validate_string_schema_data_impl(const JsonSchemaString* json_schema_string,
