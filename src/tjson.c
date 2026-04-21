@@ -1700,7 +1700,11 @@ static void json_to_string_number_impl(StringBuilder* const string_builder,
 	double intpart = 0.0;
 	double fracpart = modf(json_number.value, &intpart);
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wfloat-equal"
 	if(fracpart == 0.0) {
+#pragma GCC diagnostic pop
+
 		STRING_BUILDER_APPENDF(string_builder, OOM_ASSERT(false, "error in formatting json number");
 		                       , "%.0f", intpart);
 	} else {
