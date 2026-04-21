@@ -247,7 +247,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_null(JsonParseState* cons
 	return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("not null")));
 }
 
-static void free_json_key(JsonObjectKey* key);
+static void free_json_object_key(JsonObjectKey* key);
 
 static void json_object_destroy_impl(JsonObject* const json_obj) { // NOLINT(misc-no-recursion)
 	TMAP_TYPENAME_ITER(JsonValueMapImpl)
@@ -258,7 +258,7 @@ static void json_object_destroy_impl(JsonObject* const json_obj) { // NOLINT(mis
 	while(TMAP_ITER_NEXT(JsonValueMapImpl, &iter, &value)) {
 
 		free_json_value(&value.value);
-		free_json_key(&value.key);
+		free_json_object_key(&value.key);
 	}
 
 	TMAP_FREE(JsonValueMapImpl, &(json_obj->value));
@@ -316,19 +316,31 @@ NODISCARD static JsonString* get_empty_json_string_impl(void) {
 NODISCARD tstr_static json_object_add_entry(JsonObject* const json_object,
                                             JsonString** const key_moved, const JsonValue value) {
 
-	const JsonObjectKey key = { .string = *key_moved };
+	JsonObjectKey key = { .string = *key_moved };
 
 	*key_moved = NULL;
 
-	return json_object_add_entry_impl(json_object, key, value);
+	const tstr_static add_result = json_object_add_entry_impl(json_object, key, value);
+
+	if(!tstr_static_is_null(add_result)) {
+		free_json_object_key(&key);
+	}
+
+	return add_result;
 }
 
 NODISCARD tstr_static json_object_add_entry_dup(JsonObject* const json_object,
                                                 JsonString* const key, const JsonValue value) {
 
-	const JsonObjectKey key_dup = { .string = RC_ACQUIRE(JsonString, key) };
+	JsonObjectKey key_dup = { .string = RC_ACQUIRE(JsonString, key) };
 
-	return json_object_add_entry_impl(json_object, key_dup, value);
+	const tstr_static add_result = json_object_add_entry_impl(json_object, key_dup, value);
+
+	if(!tstr_static_is_null(add_result)) {
+		free_json_object_key(&key_dup);
+	}
+
+	return add_result;
 }
 
 NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* const json_object,
@@ -440,14 +452,15 @@ json_parse_impl_parse_object_member(JsonParseState* const state, // NOLINT(misc-
 #undef FREE_AT_END
 #define FREE_AT_END() \
 	do { \
-		free_json_string(key); \
+		if(key != NULL) { \
+			free_json_string(key); \
+		} \
 		free_json_value(&value); \
 	} while(false)
 
-	const tstr_static add_result = json_object_add_entry_dup(json_object, key, value);
+	const tstr_static add_result = json_object_add_entry(json_object, &key, value);
 
 	if(!tstr_static_is_null(add_result)) {
-
 		FREE_AT_END();
 		return make_json_error_at(state->loc, add_result);
 	}
@@ -1611,7 +1624,7 @@ void free_json_string(JsonString* const json_string) {
 	RC_RELEASE(JsonString, json_string);
 }
 
-static void free_json_key(JsonObjectKey* const key) {
+static void free_json_object_key(JsonObjectKey* const key) {
 	free_json_string(key->string);
 }
 
