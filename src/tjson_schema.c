@@ -1337,12 +1337,36 @@ NODISCARD static tstr json_schema_validate_null_schema_raw_impl(const JsonValue*
 	return TSTR_LIT("JsonValue is not null");
 }
 
+// TODO(Totto): don't return a tstr, return a variant with a better error, with a JsonPath? or a
+// similar hierarchy of where the error occured, with  a ref(RC REF!!) of the jsonvalue and schema
+// which caused the error!
+
 NODISCARD static tstr
 json_schema_validate_one_of_schema_raw_impl(const JsonSchemaOneOf* json_schema_one_of,
                                             const JsonValue* const value) {
-	UNUSED(json_schema_one_of);
-	UNUSED(value);
-	return TSTR_LIT("TODO");
+
+	// search for the first match
+	for(size_t i = 0; i < TVEC_LENGTH(JsonSchema, json_schema_one_of->values); ++i) {
+		const JsonSchema one_of_value = TVEC_AT(JsonSchema, (json_schema_one_of->values), i);
+
+		tstr subschema_result = json_schema_validate_data(&one_of_value, value);
+
+		if(tstr_is_null(&subschema_result)) {
+			return tstr_null();
+		}
+
+		tstr_free(&subschema_result);
+	}
+
+	// TODO(Totto): better error reporting
+	tstr error;
+	FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+	            ,
+	            "JsonValue doesn't match one of the subschemas (NO ADDITIONAL CONTEXT IS PRINTED "
+	            "ATM, ptr of the one_of_struct %p)",
+	            (const void*)json_schema_one_of);
+
+	return error;
 }
 
 NODISCARD static tstr

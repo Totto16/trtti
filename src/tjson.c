@@ -2217,6 +2217,8 @@ struct JsonObjectEntryImpl {
 	TMAP_TYPENAME_ENTRY(JsonValueMapImpl) value;
 };
 
+// NOTE: this doesn't ref recursively, as we don't unref recursively either, so if we free a
+// subvalue of this json_value, it is prone do errors!
 NODISCARD static JsonValue rc_json_value(const JsonValue json_value) {
 	SWITCH_JSON_VALUE(json_value) {
 		CASE_JSON_VALUE_IS_OBJECT_CONST(json_value) {
