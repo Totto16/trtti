@@ -21,7 +21,7 @@ NODISCARD Utf8DataResult get_utf8_string(const tstr_view str_view) {
 	}
 
 	const utf8proc_ssize_t result = utf8proc_decompose(
-	    (const uint8_t*)str_view.data, (long)str_view.len, buffer, (long)str_view.len,
+	    (const uint8_t*)str_view.data, (LibCLong)str_view.len, buffer, (LibCLong)str_view.len,
 	    (utf8proc_option_t)0); // NOLINT(cppcoreguidelines-narrowing-conversions,clang-analyzer-optin.core.EnumCastOutOfRange)
 
 	if(result < 0) {
@@ -31,7 +31,8 @@ NODISCARD Utf8DataResult get_utf8_string(const tstr_view str_view) {
 
 	if(result != (utf8proc_ssize_t)str_view.len) {
 		// truncate the buffer
-		void* new_buffer = realloc(buffer, sizeof(utf8proc_int32_t) * (size_t)result);
+		void* const new_buffer = // NOLINT(totto-const-correctness-c)
+		    realloc(buffer, sizeof(utf8proc_int32_t) * (size_t)result);
 
 		if(!new_buffer) {
 			free(buffer);
