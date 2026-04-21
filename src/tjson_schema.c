@@ -1188,14 +1188,183 @@ void free_json_schema(JsonSchema* const json_schema) {
 	*json_schema = new_json_schema_null();
 }
 
+#define FORMAT_TSTR(tstr_res, statement, format, ...) \
+	do { \
+		char* buf = NULL; \
+		FORMAT_STRING(&buf, statement, format, __VA_ARGS__); \
+		tstr_res = tstr_own_cstr(buf); \
+	} while(false)
+
+typedef struct {
+	const JsonObjectEntrySchema* schema_ptr;
+} JsonObjectSchemaCheckRequiredId;
+
+/* NOLINTBEGIN(misc-use-internal-linkage,totto-function-passing-type,totto-const-correctness-c) */
+// GCOVR_EXCL_START (external library)
+TMAP_DEFINE_AND_IMPLEMENT_MAP_TYPE(JsonObjectSchemaCheckRequiredId,
+                                   JsonObjectSchemaCheckRequiredIdName, bool,
+                                   JsonObjectSchemaCheckRequiredMapImpl)
+// GCOVR_EXCL_STOP
+/* NOLINTEND(misc-use-internal-linkage,totto-function-passing-type,totto-const-correctness-c) */
+
+TMAP_HASH_FUNC_SIG(JsonObjectSchemaCheckRequiredId, JsonObjectSchemaCheckRequiredIdName) {
+	// hash ptrs
+	const intptr_t ptr = (intptr_t)key.schema_ptr;
+
+	return TMAP_HASH_SCALAR(ptr);
+}
+
+TMAP_EQ_FUNC_SIG(JsonObjectSchemaCheckRequiredId, JsonObjectSchemaCheckRequiredIdName) {
+	// compare ptres
+	return key1.schema_ptr == key2.schema_ptr;
+}
+
 NODISCARD static tstr
 json_schema_validate_object_schema_data_impl(const JsonSchemaObject* json_schema_object,
                                              const JsonObject* const value) {
 
-	UNUSED(json_schema_object);
-	UNUSED(value);
-	return TSTR_LIT("TODO");
+	TMAP_TYPENAME_MAP(JsonObjectSchemaCheckRequiredMapImpl)
+	required_map = TMAP_EMPTY(JsonObjectSchemaCheckRequiredMapImpl);
+
+#define FREE_AT_END() \
+	do { \
+		TMAP_FREE(JsonObjectSchemaCheckRequiredMapImpl, &(required_map)); \
+	} while(false)
+
+	{ // check all keys if they are allowed and check teh subschema
+
+		JsonObjectIter* iter = json_object_get_iterator(value);
+
+		while(true) {
+			const JsonObjectEntry* entry = json_object_iterator_next(iter);
+
+			if(entry == NULL) {
+				break;
+			}
+
+			const JsonString* const key = json_object_entry_get_key(entry);
+
+			if(key == NULL) {
+				FREE_AT_END();
+				return TSTR_LIT(
+				    "ERROR: JsonObject implementation error: get at known good entry failed");
+			}
+
+			tstr key_str = json_string_get_as_str(key);
+
+			if(tstr_is_null(&key_str)) {
+				FREE_AT_END();
+				return TSTR_LIT("ERROR: JsonString serialization error");
+			}
+
+			const JsonObjectEntrySchema* const schema_entry =
+			    TMAP_GET(JsonObjectEntryMapImpl, &(json_schema_object->map), key_str);
+
+			if(schema_entry == NULL) {
+
+				if(json_schema_object->allow_additional_properties) {
+					tstr_free(&key_str);
+					// this is allowed here, but we allow any value here
+					continue;
+				}
+
+				json_object_free_iterator(iter);
+
+				tstr error;
+				FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+				            , "object can't have additional properties: but got key '" TSTR_FMT "'",
+				            TSTR_FMT_ARGS(key_str));
+
+				tstr_free(&key_str);
+
+				FREE_AT_END();
+				return error;
+			}
+
+			const JsonValue sub_value = json_object_entry_get_value(entry);
+
+			tstr subschema_result = json_schema_validate_data(&(schema_entry->schema), &sub_value);
+
+			if(!tstr_is_null(&subschema_result)) {
+				FREE_AT_END();
+
+				// TODO: here we should add more details, that it was on an object with the key name
+				return subschema_result;
+			}
+
+			if(schema_entry->required) {
+				// add this to found required entries
+
+				const JsonObjectSchemaCheckRequiredId required_key = { .schema_ptr = schema_entry };
+
+				TmapInsertResult insert_result = TMAP_INSERT(
+				    JsonObjectSchemaCheckRequiredMapImpl, &required_map, required_key, true, false);
+
+				if(insert_result != TmapInsertResultOk) {
+					FREE_AT_END();
+					return TSTR_LIT("ERROR: Required tracking map impl error");
+				}
+			}
+		}
+
+		json_object_free_iterator(iter);
+	}
+
+	{ // check that all required values where found!
+
+		TMAP_TYPENAME_ITER(JsonObjectEntryMapImpl)
+		iter = TMAP_ITER_INIT(JsonObjectEntryMapImpl, &(json_schema_object->map));
+
+		TMAP_TYPENAME_ENTRY(JsonObjectEntryMapImpl) entry_value;
+
+		while(TMAP_ITER_NEXT(JsonObjectEntryMapImpl, &iter, &entry_value)) {
+
+			const tstr obj_key = entry_value.key;
+			const JsonObjectEntrySchema obj_value = entry_value.value;
+
+			if(obj_value.required) {
+
+				// NOTE: this is not optimal, as we query the map twice for the value, but we need
+				// the "stable" ptr to that entry, for comparison, as it is much faster than other
+				// means of comparing two entries by other means, as str comparison requires
+				// normalization of the JsonString value first
+				const JsonObjectEntrySchema* const schema_entry =
+				    TMAP_GET(JsonObjectEntryMapImpl, &(json_schema_object->map), obj_key);
+
+				if(schema_entry == NULL) {
+					FREE_AT_END();
+					return TSTR_LIT(
+					    "ERROR: JsonObject implementation error: get at known good entry failed");
+				}
+
+				const JsonObjectSchemaCheckRequiredId required_key = { .schema_ptr = schema_entry };
+
+				// check if we have encountered it
+				const bool* const required_entry =
+				    TMAP_GET(JsonObjectSchemaCheckRequiredMapImpl, &required_map, required_key);
+
+				if(required_entry == NULL) {
+					FREE_AT_END();
+
+					tstr error;
+					FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+					            , "object is missing required key '" TSTR_FMT "'",
+					            TSTR_FMT_ARGS(obj_key));
+
+					FREE_AT_END();
+
+					return error;
+				}
+			}
+		}
+	}
+
+	FREE_AT_END();
+
+	return tstr_null();
 }
+
+#undef FREE_AT_END
 
 NODISCARD static tstr
 json_schema_validate_object_schema_raw_impl(const JsonSchemaObject* json_schema_object,
@@ -1206,13 +1375,6 @@ json_schema_validate_object_schema_raw_impl(const JsonSchemaObject* json_schema_
 
 	return TSTR_LIT("JsonValue is not an object");
 }
-
-#define FORMAT_TSTR(tstr_res, statement, format, ...) \
-	do { \
-		char* buf = NULL; \
-		FORMAT_STRING(&buf, statement, format, __VA_ARGS__); \
-		tstr_res = tstr_own_cstr(buf); \
-	} while(false)
 
 NODISCARD static tstr
 json_schema_validate_array_schema_data_impl(const JsonSchemaArray* json_schema_array,
