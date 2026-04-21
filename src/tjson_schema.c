@@ -1234,13 +1234,77 @@ NODISCARD static tstr json_schema_validate_number_schema_raw_impl(const JsonValu
 	return TSTR_LIT("JsonValue is not a number");
 }
 
+#define FORMAT_TSTR(tstr_res, statement, format, ...) \
+	do { \
+		char* buf = NULL; \
+		FORMAT_STRING(&buf, statement, format, __VA_ARGS__); \
+		tstr_res = tstr_own_cstr(buf); \
+	} while(false)
+
 NODISCARD static tstr
 json_schema_validate_string_schema_data_impl(const JsonSchemaString* json_schema_string,
                                              const JsonString* const value) {
 
-	UNUSED(json_schema_string);
-	UNUSED(value);
-	return TSTR_LIT("TODO");
+	const JsonSchemaStringProperties string_props = json_schema_string->props;
+
+	if(HAS_FLAG(string_props.flags, JsonSchemaStringPropertiesFlagsMin)) {
+
+		const size_t min_length = string_props.min_length;
+
+		const size_t size = json_string_size(value);
+
+		if(min_length < size) {
+			tstr error;
+			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+			            , "string size (%zu) is smaller than the min size (%zu)", size, min_length);
+			return error;
+		}
+
+		// fall through to the next checks
+	}
+
+	if(HAS_FLAG(string_props.flags, JsonSchemaStringPropertiesFlagsMax)) {
+
+		const size_t max_length = string_props.max_length;
+
+		const size_t size = json_string_size(value);
+
+		if(max_length > size) {
+			tstr error;
+			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+			            , "string size (%zu) is larger than the max size (%zu)", size, max_length);
+			return error;
+		}
+
+		// fall through to the next checks
+	}
+
+	if(HAS_FLAG(string_props.flags, JsonSchemaStringPropertiesFlagsPattern)) {
+
+		const JsonSchemaRegex* pattern = string_props.pattern;
+		assert(pattern != NULL);
+
+		tstr normalized_str = json_string_normalized(value);
+
+		const bool matches = simple_regex_match(&(pattern->regex), &normalized_str);
+
+		if(!matches) {
+			tstr error;
+			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+			            , "string '" TSTR_FMT "' doesn't match regex '" TSTR_FMT "'",
+			            TSTR_FMT_ARGS(normalized_str), TSTR_FMT_ARGS((pattern->original)));
+
+			tstr_free(&normalized_str);
+
+			return error;
+		}
+
+		tstr_free(&normalized_str);
+
+		// fall through to the next checks
+	}
+
+	return tstr_null();
 }
 
 NODISCARD static tstr
