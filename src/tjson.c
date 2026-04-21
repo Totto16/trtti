@@ -1826,17 +1826,17 @@ NODISCARD static int8_t json_impl_escape_char_into(const Utf8Codepoint codepoint
 }
 
 // from my project ass_parser_c, modified slightly
-#define UTF8_CHUNK_SIZE_NORMALIZE 256
+#define NORMALIZED_STR_JSON_ESCAPED_UTF8_CHUNK_SIZE_NORMALIZE 256
 
 // 4 for unicode chars, 6 for escaped chars, as the max there is \uXXXX
-#define UTF8_MAX_AMOUNT_PER_CHUNK_ITERATION 6
+#define NORMALIZED_STR_JSON_ESCAPED_UTF8_MAX_AMOUNT_PER_CHUNK_ITERATION 6
 
-static tstr get_normalized_string_from_codepoints_json_escaped(JsonCharArr codepoints) {
+static tstr get_normalized_string_from_codepoints_json_escaped(const JsonCharArr codepoints) {
 	if(codepoints.data == NULL) {
 		return tstr_null();
 	}
 
-	size_t buffer_size = UTF8_CHUNK_SIZE_NORMALIZE;
+	size_t buffer_size = NORMALIZED_STR_JSON_ESCAPED_UTF8_CHUNK_SIZE_NORMALIZE;
 	uint8_t* buffer = (uint8_t*)malloc(buffer_size);
 
 	size_t current_size = 0;
@@ -1847,8 +1847,9 @@ static tstr get_normalized_string_from_codepoints_json_escaped(JsonCharArr codep
 
 	for(size_t i = 0; i < TVEC_LENGTH(Utf8Codepoint, codepoints); ++i) {
 
-		if(buffer_size - current_size < UTF8_MAX_AMOUNT_PER_CHUNK_ITERATION) {
-			buffer_size = buffer_size + UTF8_CHUNK_SIZE_NORMALIZE;
+		if(buffer_size - current_size <
+		   NORMALIZED_STR_JSON_ESCAPED_UTF8_MAX_AMOUNT_PER_CHUNK_ITERATION) {
+			buffer_size = buffer_size + NORMALIZED_STR_JSON_ESCAPED_UTF8_CHUNK_SIZE_NORMALIZE;
 			uint8_t* new_buffer = (uint8_t*)realloc(buffer, buffer_size);
 
 			if(!new_buffer) {
@@ -1959,12 +1960,12 @@ json_to_string_array_impl(StringBuilder* const string_builder, // NOLINT(misc-no
 
 	string_builder_append_tstr(string_builder, &start_str);
 
-	for(size_t i = 0; i < json_array_size(json_array); ++i) {
+	for(size_t i = 0; i < json_array_get_size(json_array); ++i) {
 		if(i != 0) {
 			string_builder_append_tstr(string_builder, &separator_str);
 		}
 
-		const JsonValue* const value = json_array_at(json_array, i);
+		const JsonValue* const value = json_array_get_at(json_array, i);
 		json_to_string_variant_impl(string_builder, value, options);
 	}
 
@@ -2104,6 +2105,80 @@ NODISCARD bool json_string_eq(const JsonString* const str1, const JsonString* co
 	return memcmp(data1, data2, sizeof(*data1) * len1) == 0;
 }
 
+TJSON_NODISCARD size_t json_string_get_size(const JsonString* const str) {
+	const size_t len = TVEC_LENGTH(Utf8Codepoint, str->value);
+	return len;
+}
+
+// from my project ass_parser_c, modified slightly
+#define NORMALIZED_STR_NORMAL_UTF8_CHUNK_SIZE_NORMALIZE 256
+
+// 4 for unicode chars
+#define NORMALIZED_STR_NORMAL_UTF8_MAX_AMOUNT_PER_CHUNK_ITERATION 4
+
+static tstr get_normalized_string_from_codepoints(const JsonCharArr codepoints) {
+	if(codepoints.data == NULL) {
+		return tstr_null();
+	}
+
+	size_t buffer_size = NORMALIZED_STR_NORMAL_UTF8_CHUNK_SIZE_NORMALIZE;
+	uint8_t* buffer = (uint8_t*)malloc(buffer_size);
+
+	size_t current_size = 0;
+
+	if(!buffer) {
+		return tstr_null();
+	}
+
+	for(size_t i = 0; i < TVEC_LENGTH(Utf8Codepoint, codepoints); ++i) {
+
+		if(buffer_size - current_size < NORMALIZED_STR_NORMAL_UTF8_MAX_AMOUNT_PER_CHUNK_ITERATION) {
+			buffer_size = buffer_size + NORMALIZED_STR_NORMAL_UTF8_CHUNK_SIZE_NORMALIZE;
+			uint8_t* new_buffer = (uint8_t*)realloc(buffer, buffer_size);
+
+			if(!new_buffer) {
+				free(buffer);
+				return tstr_null();
+			}
+
+			buffer = new_buffer;
+		}
+
+		const Utf8Codepoint codepoint = TVEC_AT(Utf8Codepoint, codepoints, i);
+
+		// needs place for 4  chars
+		const utf8proc_ssize_t result = utf8proc_encode_char(codepoint, buffer + current_size);
+
+		if(result <= 0) {
+			free(buffer);
+			return tstr_null();
+		}
+
+		current_size = current_size + (uint8_t)result;
+	}
+
+	if(buffer_size - current_size < 1) {
+		buffer_size = buffer_size + 1;
+		uint8_t* new_buffer = (uint8_t*)realloc(buffer, buffer_size);
+
+		if(!new_buffer) {
+			free(buffer);
+			return tstr_null();
+		}
+
+		buffer = new_buffer;
+	}
+
+	buffer[current_size] = '\0';
+
+	return tstr_own((char*)buffer, current_size, current_size);
+}
+
+TJSON_NODISCARD tstr json_string_get_as_str(const JsonString* const str) {
+
+	return get_normalized_string_from_codepoints(str->value);
+}
+
 TJSON_NODISCARD bool json_string_starts_with(const JsonString* const str,
                                              const JsonString* const prefix) {
 
@@ -2124,17 +2199,17 @@ TJSON_NODISCARD bool json_string_starts_with(const JsonString* const str,
 	return memcmp(data_str, data_prefix, sizeof(*data_str) * len_prefix) == 0;
 }
 
-NODISCARD size_t json_array_size(const JsonArray* const array) {
+NODISCARD size_t json_array_get_size(const JsonArray* const array) {
 	return TVEC_LENGTH(JsonValue, array->value);
 }
 
-NODISCARD const JsonValue* json_array_at(const JsonArray* const array, const size_t index) {
-	assert(index < json_array_size(array)); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+NODISCARD const JsonValue* json_array_get_at(const JsonArray* const array, const size_t index) {
+	assert(index < json_array_get_size(array)); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
 
 	return TVEC_GET_AT(JsonValue, &(array->value), index);
 }
 
-NODISCARD size_t json_object_count(const JsonObject* const object) {
+NODISCARD size_t json_object_get_count(const JsonObject* const object) {
 	return TMAP_SIZE(JsonValueMapImpl, &(object->value));
 }
 

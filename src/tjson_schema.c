@@ -296,7 +296,7 @@ json_schema_to_string_object_impl(const JsonSchemaObject* const object,
 
 	{ // complicated properties
 
-		if(json_array_size(required_arr) > 0) {
+		if(json_array_get_size(required_arr) > 0) {
 
 			tstr_static insert_result =
 			    json_object_add_entry_cstr(root, "required", new_json_value_array_rc(required_arr));
@@ -1251,7 +1251,7 @@ json_schema_validate_string_schema_data_impl(const JsonSchemaString* json_schema
 
 		const size_t min_length = string_props.min_length;
 
-		const size_t size = json_string_size(value);
+		const size_t size = json_string_get_size(value);
 
 		if(min_length < size) {
 			tstr error;
@@ -1267,7 +1267,7 @@ json_schema_validate_string_schema_data_impl(const JsonSchemaString* json_schema
 
 		const size_t max_length = string_props.max_length;
 
-		const size_t size = json_string_size(value);
+		const size_t size = json_string_get_size(value);
 
 		if(max_length > size) {
 			tstr error;
@@ -1284,22 +1284,26 @@ json_schema_validate_string_schema_data_impl(const JsonSchemaString* json_schema
 		const JsonSchemaRegex* pattern = string_props.pattern;
 		assert(pattern != NULL);
 
-		tstr normalized_str = json_string_normalized(value);
+		tstr value_str = json_string_get_as_str(value);
 
-		const bool matches = simple_regex_match(&(pattern->regex), &normalized_str);
+		if(tstr_is_null(&value_str)) {
+			return TSTR_LIT("ERROR: JsonString serialization error");
+		}
+
+		const bool matches = simple_regex_match(&(pattern->regex), &value_str);
 
 		if(!matches) {
 			tstr error;
 			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
 			            , "string '" TSTR_FMT "' doesn't match regex '" TSTR_FMT "'",
-			            TSTR_FMT_ARGS(normalized_str), TSTR_FMT_ARGS((pattern->original)));
+			            TSTR_FMT_ARGS(value_str), TSTR_FMT_ARGS((pattern->original)));
 
-			tstr_free(&normalized_str);
+			tstr_free(&value_str);
 
 			return error;
 		}
 
-		tstr_free(&normalized_str);
+		tstr_free(&value_str);
 
 		// fall through to the next checks
 	}

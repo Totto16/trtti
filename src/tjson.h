@@ -160,13 +160,17 @@ TJSON_NODISCARD tstr json_value_to_string_advanced(const JsonValue* json_value,
 
 TJSON_NODISCARD bool json_string_eq(const JsonString* str1, const JsonString* str2);
 
+TJSON_NODISCARD size_t json_string_get_size(const JsonString* str);
+
 TJSON_NODISCARD bool json_string_starts_with(const JsonString* str, const JsonString* prefix);
 
-TJSON_NODISCARD size_t json_array_size(const JsonArray* array);
+TJSON_NODISCARD tstr json_string_get_as_str(const JsonString* str);
 
-TJSON_NODISCARD const JsonValue* json_array_at(const JsonArray* array, size_t index);
+TJSON_NODISCARD size_t json_array_get_size(const JsonArray* array);
 
-TJSON_NODISCARD size_t json_object_count(const JsonObject* object);
+TJSON_NODISCARD const JsonValue* json_array_get_at(const JsonArray* array, size_t index);
+
+TJSON_NODISCARD size_t json_object_get_count(const JsonObject* object);
 
 typedef struct JsonObjectEntryImpl JsonObjectEntry;
 
@@ -232,6 +236,10 @@ TJSON_NODISCARD bool json_source_location_is_null(JsonSourceLocation location);
 TJSON_NODISCARD tstr json_format_source_location(JsonSourceLocation location);
 
 TJSON_NODISCARD tstr json_format_error(JsonError error);
+
+// TODO: support JSONPath
+//  https://en.wikipedia.org/wiki/JSONPath
+// https://www.rfc-editor.org/rfc/rfc9535
 
 // ref count section
 
