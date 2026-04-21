@@ -102,6 +102,10 @@ void free_json_schema_literal(JsonSchemaLiteral* json_schema_lit);
 
 void free_json_schema(JsonSchema* json_schema);
 
+// validate section
+
+TJSON_NODISCARD tstr json_schema_validate_data(const JsonSchema* schema, const JsonValue* value);
+
 // ref count section
 
 TJSON_NODISCARD JsonSchemaObject* rc_json_schema_object(JsonSchemaObject* json_schema_object);

@@ -1169,6 +1169,7 @@ void free_json_schema(JsonSchema* const json_schema) {
 		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_NULL() {}
 		break;
+		VARIANT_CASE_END();
 		CASE_JSON_SCHEMA_IS_ONE_OF_CONST(*json_schema) {
 			free_json_schema_one_of(one_of.one_of);
 		}
@@ -1179,13 +1180,161 @@ void free_json_schema(JsonSchema* const json_schema) {
 		}
 		break;
 		VARIANT_CASE_END();
-		VARIANT_CASE_END();
 		default: {
 			break;
 		}
 	}
 
 	*json_schema = new_json_schema_null();
+}
+
+NODISCARD static tstr
+json_schema_validate_object_schema_data_impl(const JsonSchemaObject* json_schema_object,
+                                             const JsonObject* const value) {
+
+	UNUSED(json_schema_object);
+	UNUSED(value);
+	return TSTR_LIT("TODO");
+}
+
+NODISCARD static tstr
+json_schema_validate_object_schema_raw_impl(const JsonSchemaObject* json_schema_object,
+                                            const JsonValue* const value) {
+	IF_JSON_VALUE_IS_OBJECT_CONST(*value) {
+		return json_schema_validate_object_schema_data_impl(json_schema_object, object.obj);
+	}
+
+	return TSTR_LIT("JsonValue is not an object");
+}
+
+NODISCARD static tstr
+json_schema_validate_array_schema_data_impl(const JsonSchemaArray* json_schema_array,
+                                            const JsonArray* const value) {
+
+	UNUSED(json_schema_array);
+	UNUSED(value);
+	return TSTR_LIT("TODO");
+}
+
+NODISCARD static tstr
+json_schema_validate_array_schema_raw_impl(const JsonSchemaArray* json_schema_array,
+                                           const JsonValue* const value) {
+	IF_JSON_VALUE_IS_ARRAY_CONST(*value) {
+		return json_schema_validate_array_schema_data_impl(json_schema_array, array.arr);
+	}
+
+	return TSTR_LIT("JsonValue is not an array");
+}
+
+NODISCARD static tstr json_schema_validate_number_schema_raw_impl(const JsonValue* const value) {
+	IF_JSON_VALUE_IS_NUMBER_IGN(*value) {
+		return tstr_null();
+	}
+
+	return TSTR_LIT("JsonValue is not a number");
+}
+
+NODISCARD static tstr
+json_schema_validate_string_schema_data_impl(const JsonSchemaString* json_schema_string,
+                                             const JsonString* const value) {
+
+	UNUSED(json_schema_string);
+	UNUSED(value);
+	return TSTR_LIT("TODO");
+}
+
+NODISCARD static tstr
+json_schema_validate_string_schema_raw_impl(const JsonSchemaString* json_schema_string,
+                                            const JsonValue* const value) {
+	IF_JSON_VALUE_IS_STRING_CONST(*value) {
+		return json_schema_validate_string_schema_data_impl(json_schema_string, string);
+	}
+
+	return TSTR_LIT("JsonValue is not a string");
+}
+
+NODISCARD static tstr json_schema_validate_boolean_schema_raw_impl(const JsonValue* const value) {
+	IF_JSON_VALUE_IS_BOOLEAN_IGN(*value) {
+		return tstr_null();
+	}
+
+	return TSTR_LIT("JsonValue is not a boolean");
+}
+
+NODISCARD static tstr json_schema_validate_null_schema_raw_impl(const JsonValue* const value) {
+	IF_JSON_VALUE_IS_NULL(*value) {
+		return tstr_null();
+	}
+
+	return TSTR_LIT("JsonValue is not null");
+}
+
+NODISCARD static tstr
+json_schema_validate_one_of_schema_raw_impl(const JsonSchemaOneOf* json_schema_one_of,
+                                            const JsonValue* const value) {
+	UNUSED(json_schema_one_of);
+	UNUSED(value);
+	return TSTR_LIT("TODO");
+}
+
+NODISCARD static tstr
+json_schema_validate_literal_schema_data_impl(const JsonSchemaLiteral* json_schema_literal,
+                                              const JsonString* const value) {
+
+	UNUSED(json_schema_literal);
+	UNUSED(value);
+	return TSTR_LIT("TODO");
+}
+
+NODISCARD static tstr
+json_schema_validate_literal_schema_raw_impl(const JsonSchemaLiteral* json_schema_literal,
+                                             const JsonValue* const value) {
+	IF_JSON_VALUE_IS_STRING_CONST(*value) {
+		return json_schema_validate_literal_schema_data_impl(json_schema_literal, string);
+	}
+
+	return TSTR_LIT("JsonValue is not a string (literal)");
+}
+
+TJSON_NODISCARD tstr json_schema_validate_data(const JsonSchema* const schema,
+                                               const JsonValue* const value) {
+	SWITCH_JSON_SCHEMA(*schema) {
+		CASE_JSON_SCHEMA_IS_OBJECT_CONST(*schema) {
+			return json_schema_validate_object_schema_raw_impl(object.obj, value);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_ARRAY_CONST(*schema) {
+			return json_schema_validate_array_schema_raw_impl(array.arr, value);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_NUMBER() {
+			return json_schema_validate_number_schema_raw_impl(value);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_STRING_CONST(*schema) {
+			return json_schema_validate_string_schema_raw_impl(string.str, value);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_BOOLEAN() {
+			return json_schema_validate_boolean_schema_raw_impl(value);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_NULL() {
+			return json_schema_validate_null_schema_raw_impl(value);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_ONE_OF_CONST(*schema) {
+			return json_schema_validate_one_of_schema_raw_impl(one_of.one_of, value);
+		}
+		VARIANT_CASE_END();
+		CASE_JSON_SCHEMA_IS_LITERAL_MUT(*schema) {
+			return json_schema_validate_literal_schema_raw_impl(literal.lit, value);
+		}
+		VARIANT_CASE_END();
+		default: {
+			return TSTR_LIT("Unknown schema passed");
+		}
+	}
 }
 
 TJSON_NODISCARD JsonSchemaObject*
