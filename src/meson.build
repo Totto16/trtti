@@ -78,6 +78,13 @@ else
         compile_args: ['-D_TJSON_USE_VARIANT_IMPL=1'],
     )
 
+
+    generated_sources = alias_target(
+        'generated_sources',
+        json_variants_generated_tgt,
+    )
+
+
 endif
 
 
