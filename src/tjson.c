@@ -1381,6 +1381,11 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 
 	JsonString* const string = get_empty_json_string_impl();
 
+	if(string == NULL) {
+		return new_json_parse_result_error(
+		    make_json_error_at(state->loc, TSTR_STATIC_LIT("Internal OOM error")));
+	}
+
 #define FREE_AT_END() \
 	do { \
 		free_json_string(string); \
