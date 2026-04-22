@@ -46,7 +46,7 @@ NODISCARD ReadFileResult read_entire_file(const tstr* const file_path) {
 		return new_read_file_result_error(TSTR_STATIC_LIT("Couldn't seek to start of file"));
 	}
 
-	LibCChar* file_data = (LibCChar*)malloc((size_t)file_size * sizeof(LibCChar));
+	LibCChar* file_data = (LibCChar*)TJSON_MALLOC((size_t)file_size * sizeof(LibCChar));
 
 	if(!file_data) {
 		FREE_AT_END();
@@ -57,7 +57,7 @@ NODISCARD ReadFileResult read_entire_file(const tstr* const file_path) {
 #define FREE_AT_END() \
 	do { \
 		fclose(file); \
-		free(file_data); \
+		TJSON_FREE(file_data); \
 	} while(false)
 
 	const size_t fread_result = fread(file_data, 1, (size_t)file_size, file);
@@ -73,7 +73,7 @@ NODISCARD ReadFileResult read_entire_file(const tstr* const file_path) {
 #undef FREE_AT_END
 #define FREE_AT_END() \
 	do { \
-		free(file_data); \
+		TJSON_FREE(file_data); \
 	} while(false)
 
 	if(fclose_result != 0) {

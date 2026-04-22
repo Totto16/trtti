@@ -1,5 +1,7 @@
 #pragma once
 
+#include "../allocator.h"
+
 #include <regex.h>
 #include <tstr.h>
 

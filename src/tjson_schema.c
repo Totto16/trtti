@@ -828,7 +828,7 @@ static void json_schema_object_destroy_impl(JsonSchemaObject* const json_schema_
 }
 
 TJSON_NODISCARD JsonSchemaObject* json_schema_object_get(const bool allow_additional_properties) {
-	JsonSchemaObject* const object = RC_MALLOC(JsonSchemaObject, json_schema_object_destroy_impl);
+	JsonSchemaObject* const object = RC_ALLOC(JsonSchemaObject, json_schema_object_destroy_impl);
 
 	if(object == NULL) {
 		return NULL;
@@ -905,7 +905,7 @@ static void json_schema_array_destroy_impl(JsonSchemaArray* const json_schema_ar
 
 TJSON_NODISCARD JsonSchemaArray* json_schema_array_get(const JsonSchema items,
                                                        const bool require_unique_items) {
-	JsonSchemaArray* const array = RC_MALLOC(JsonSchemaArray, json_schema_array_destroy_impl);
+	JsonSchemaArray* const array = RC_ALLOC(JsonSchemaArray, json_schema_array_destroy_impl);
 
 	if(array == NULL) {
 		return NULL;
@@ -965,7 +965,7 @@ static void json_schema_string_destroy_impl(JsonSchemaString* const json_schema_
 }
 
 TJSON_NODISCARD JsonSchemaString* json_schema_string_get(void) {
-	JsonSchemaString* const string = RC_MALLOC(JsonSchemaString, json_schema_string_destroy_impl);
+	JsonSchemaString* const string = RC_ALLOC(JsonSchemaString, json_schema_string_destroy_impl);
 
 	if(string == NULL) {
 		return NULL;
@@ -1029,7 +1029,7 @@ TJSON_NODISCARD JsonSchemaRegex* json_schema_regex_get_tstr(const tstr* const st
 	const SimpleRegex regex = result.data.ok;
 
 	JsonSchemaRegex* const json_schema_regex =
-	    RC_MALLOC(JsonSchemaRegex, json_schema_regex_destroy_impl);
+	    RC_ALLOC(JsonSchemaRegex, json_schema_regex_destroy_impl);
 
 	if(json_schema_regex == NULL) {
 		return NULL;
@@ -1078,7 +1078,7 @@ static void json_schema_one_of_destroy_impl(JsonSchemaOneOf* const json_schema_o
 }
 
 TJSON_NODISCARD JsonSchemaOneOf* json_schema_one_of_get_empty(void) {
-	JsonSchemaOneOf* const one_of = RC_MALLOC(JsonSchemaOneOf, json_schema_one_of_destroy_impl);
+	JsonSchemaOneOf* const one_of = RC_ALLOC(JsonSchemaOneOf, json_schema_one_of_destroy_impl);
 
 	if(one_of == NULL) {
 		return NULL;
@@ -1111,7 +1111,7 @@ static void json_schema_literal_destroy_impl(JsonSchemaLiteral* const json_schem
 
 TJSON_NODISCARD static JsonSchemaLiteral* json_schema_literal_get_impl(tstr value) {
 	JsonSchemaLiteral* const literal =
-	    RC_MALLOC(JsonSchemaLiteral, json_schema_literal_destroy_impl);
+	    RC_ALLOC(JsonSchemaLiteral, json_schema_literal_destroy_impl);
 
 	if(literal == NULL) {
 		return NULL;

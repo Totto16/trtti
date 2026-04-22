@@ -1,6 +1,10 @@
 #pragma once
 
+#include "./allocator.h"
+
 #include <stdbool.h>
+
+// is affected by allocator.h
 #include <tstr.h>
 
 // public part of the utils

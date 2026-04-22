@@ -4,6 +4,8 @@
 	#error "can only be used internally"
 #endif
 
+#include "../allocator.h"
+
 #include "../_impl/utils.h"
 
 #include <tstr.h>

@@ -25,12 +25,12 @@ NODISCARD SimpleRegexResult simple_regex_compile(const tstr* const str) {
 
 	if(compile_result != 0) {
 
-		char* errbuf = malloc(sizeof(char) * (ERR_BUF_SIZE + 1));
+		char* errbuf = TJSON_MALLOC(sizeof(char) * (ERR_BUF_SIZE + 1));
 
 		const size_t bytes_written = regerror(compile_result, NULL, errbuf, ERR_BUF_SIZE);
 
 		if(bytes_written > ERR_BUF_SIZE) {
-			free(errbuf);
+			TJSON_FREE(errbuf);
 			return new_simple_regex_result_error(TSTR_LIT("error in error allocation"));
 		}
 

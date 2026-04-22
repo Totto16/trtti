@@ -5,6 +5,8 @@
 	#error "can only be used internally"
 #endif
 
+#include "../allocator.h"
+
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -83,14 +85,14 @@ extern "C" {
 	{ \
 		char* internalBuffer = *toStore; \
 		if(internalBuffer != NULL) { \
-			free(internalBuffer); \
+			TJSON_FREE(internalBuffer); \
 		} \
 		const LibCInt toWrite = snprintf(NULL, 0, format, __VA_ARGS__) + 1; \
 		if(toWrite < 0) { \
 			logger_fn("snprintf Internal error: negative value returned: %d\n", toWrite); \
 			statement \
 		} \
-		internalBuffer = (char*)malloc((size_t)toWrite * sizeof(char)); \
+		internalBuffer = (char*)TJSON_MALLOC((size_t)toWrite * sizeof(char)); \
 		if(!internalBuffer) { \
 			logger_fn("Couldn't allocate memory for %d bytes!\n", toWrite); \
 			statement \
@@ -100,7 +102,7 @@ extern "C" {
 			logger_fn("snprintf did write more bytes then it had space in the buffer, available " \
 			          "space: '%d', actually written: '%d'!\n", \
 			          (toWrite) - 1, written); \
-			free(internalBuffer); \
+			TJSON_FREE(internalBuffer); \
 			statement \
 		} \
 		*toStore = internalBuffer; \

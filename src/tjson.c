@@ -265,7 +265,7 @@ static void json_object_destroy_impl(JsonObject* const json_obj) { // NOLINT(mis
 }
 
 NODISCARD JsonObject* json_object_get_empty(void) {
-	JsonObject* const object = RC_MALLOC(JsonObject, json_object_destroy_impl);
+	JsonObject* const object = RC_ALLOC(JsonObject, json_object_destroy_impl);
 
 	if(object == NULL) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
 		return NULL;     // GCOVR_EXCL_LINE
@@ -303,7 +303,7 @@ static void json_string_destroy_impl(JsonString* const json_string) {
 }
 
 NODISCARD static JsonString* get_empty_json_string_impl(void) {
-	JsonString* const string = RC_MALLOC(JsonString, json_string_destroy_impl);
+	JsonString* const string = RC_ALLOC(JsonString, json_string_destroy_impl);
 
 	if(string == NULL) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
 		return NULL;     // GCOVR_EXCL_LINE
@@ -630,7 +630,7 @@ static void json_array_destroy_impl(JsonArray* const json_arr) { // NOLINT(misc-
 }
 
 NODISCARD JsonArray* json_array_get_empty(void) {
-	JsonArray* const array = RC_MALLOC(JsonArray, json_array_destroy_impl);
+	JsonArray* const array = RC_ALLOC(JsonArray, json_array_destroy_impl);
 
 	if(array == NULL) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
 		return NULL;    // GCOVR_EXCL_LINE
@@ -1925,7 +1925,7 @@ static tstr get_normalized_string_from_codepoints_json_escaped(const JsonCharArr
 	}
 
 	size_t buffer_size = NORMALIZED_STR_JSON_ESCAPED_UTF8_CHUNK_SIZE_NORMALIZE;
-	uint8_t* buffer = (uint8_t*)malloc(buffer_size);
+	uint8_t* buffer = (uint8_t*)TJSON_MALLOC(buffer_size);
 
 	size_t current_size = 0;
 
@@ -1938,10 +1938,10 @@ static tstr get_normalized_string_from_codepoints_json_escaped(const JsonCharArr
 		if(buffer_size - current_size <
 		   NORMALIZED_STR_JSON_ESCAPED_UTF8_MAX_AMOUNT_PER_CHUNK_ITERATION) {
 			buffer_size = buffer_size + NORMALIZED_STR_JSON_ESCAPED_UTF8_CHUNK_SIZE_NORMALIZE;
-			uint8_t* new_buffer = (uint8_t*)realloc(buffer, buffer_size);
+			uint8_t* new_buffer = (uint8_t*)TJSON_REALLOC(buffer, buffer_size);
 
 			if(!new_buffer) {
-				free(buffer);
+				TJSON_FREE(buffer);
 				return tstr_null();
 			}
 
@@ -1955,7 +1955,7 @@ static tstr get_normalized_string_from_codepoints_json_escaped(const JsonCharArr
 			const int8_t result = json_impl_escape_char_into(codepoint, buffer + current_size);
 
 			if(result <= 0) {
-				free(buffer);
+				TJSON_FREE(buffer);
 				return tstr_null();
 			}
 
@@ -1966,7 +1966,7 @@ static tstr get_normalized_string_from_codepoints_json_escaped(const JsonCharArr
 			const utf8proc_ssize_t result = utf8proc_encode_char(codepoint, buffer + current_size);
 
 			if(result <= 0) {
-				free(buffer);
+				TJSON_FREE(buffer);
 				return tstr_null();
 			}
 
@@ -1976,10 +1976,10 @@ static tstr get_normalized_string_from_codepoints_json_escaped(const JsonCharArr
 
 	if(buffer_size - current_size < 1) {
 		buffer_size = buffer_size + 1;
-		uint8_t* new_buffer = (uint8_t*)realloc(buffer, buffer_size);
+		uint8_t* new_buffer = (uint8_t*)TJSON_REALLOC(buffer, buffer_size);
 
 		if(!new_buffer) {
-			free(buffer);
+			TJSON_FREE(buffer);
 			return tstr_null();
 		}
 
@@ -2210,7 +2210,7 @@ static tstr get_normalized_string_from_codepoints(const JsonCharArr codepoints) 
 	}
 
 	size_t buffer_size = NORMALIZED_STR_NORMAL_UTF8_CHUNK_SIZE_NORMALIZE;
-	uint8_t* buffer = (uint8_t*)malloc(buffer_size);
+	uint8_t* buffer = (uint8_t*)TJSON_MALLOC(buffer_size);
 
 	size_t current_size = 0;
 
@@ -2222,10 +2222,10 @@ static tstr get_normalized_string_from_codepoints(const JsonCharArr codepoints) 
 
 		if(buffer_size - current_size < NORMALIZED_STR_NORMAL_UTF8_MAX_AMOUNT_PER_CHUNK_ITERATION) {
 			buffer_size = buffer_size + NORMALIZED_STR_NORMAL_UTF8_CHUNK_SIZE_NORMALIZE;
-			uint8_t* new_buffer = (uint8_t*)realloc(buffer, buffer_size);
+			uint8_t* new_buffer = (uint8_t*)TJSON_REALLOC(buffer, buffer_size);
 
 			if(!new_buffer) {
-				free(buffer);
+				TJSON_FREE(buffer);
 				return tstr_null();
 			}
 
@@ -2238,7 +2238,7 @@ static tstr get_normalized_string_from_codepoints(const JsonCharArr codepoints) 
 		const utf8proc_ssize_t result = utf8proc_encode_char(codepoint, buffer + current_size);
 
 		if(result <= 0) {
-			free(buffer);
+			TJSON_FREE(buffer);
 			return tstr_null();
 		}
 
@@ -2247,10 +2247,10 @@ static tstr get_normalized_string_from_codepoints(const JsonCharArr codepoints) 
 
 	if(buffer_size - current_size < 1) {
 		buffer_size = buffer_size + 1;
-		uint8_t* new_buffer = (uint8_t*)realloc(buffer, buffer_size);
+		uint8_t* new_buffer = (uint8_t*)TJSON_REALLOC(buffer, buffer_size);
 
 		if(!new_buffer) {
-			free(buffer);
+			TJSON_FREE(buffer);
 			return tstr_null();
 		}
 
@@ -2369,7 +2369,7 @@ struct JsonObjectIterImpl {
 
 NODISCARD JsonObjectIter* json_object_get_iterator(const JsonObject* const object) {
 
-	JsonObjectIter* iter = malloc(sizeof(JsonObjectIter));
+	JsonObjectIter* iter = TJSON_MALLOC(sizeof(JsonObjectIter));
 
 	if(iter == NULL) {
 		return NULL;
@@ -2393,7 +2393,7 @@ NODISCARD const JsonObjectEntry* json_object_iterator_next(JsonObjectIter* const
 }
 
 void json_object_free_iterator(JsonObjectIter* const iter) {
-	free(iter);
+	TJSON_FREE(iter);
 }
 
 NODISCARD const JsonString* json_object_entry_get_key(const JsonObjectEntry* const object_entry) {

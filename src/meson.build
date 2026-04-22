@@ -88,10 +88,6 @@ else
 endif
 
 
-
-
-
-
 cc = meson.get_compiler('c')
 
 stdc_version = cc.get_define('__STDC_VERSION__ ')
