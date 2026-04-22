@@ -267,8 +267,8 @@ static void json_object_destroy_impl(JsonObject* const json_obj) { // NOLINT(mis
 NODISCARD JsonObject* json_object_get_empty(void) {
 	JsonObject* const object = RC_ALLOC(JsonObject, json_object_destroy_impl);
 
-	if(object == NULL) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		return NULL;     // GCOVR_EXCL_LINE
+	if(object == NULL) {
+		return NULL;
 	}
 
 	object->value = TMAP_EMPTY(JsonValueMapImpl);
@@ -282,12 +282,12 @@ NODISCARD static tstr_static json_object_add_entry_impl(JsonObject* const json_o
 	const TmapInsertResult result =
 	    TMAP_INSERT(JsonValueMapImpl, &(json_object->value), key, value, false);
 
-	switch(result) { // GCOVR_EXCL_BR_WITHOUT_HIT: 2/4
+	switch(result) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/4
 		case TmapInsertResultOk: {
 			return tstr_static_null();
 		}
-		case TmapInsertResultErr: {                          // GCOVR_EXCL_LINE
-			return TSTR_STATIC_LIT("json object add error"); // GCOVR_EXCL_LINE
+		case TmapInsertResultErr: {
+			return TSTR_STATIC_LIT("json object add error");
 		}
 		case TmapInsertResultWouldOverwrite: {
 			return TSTR_STATIC_LIT("json object has duplicate key");
@@ -305,8 +305,8 @@ static void json_string_destroy_impl(JsonString* const json_string) {
 NODISCARD static JsonString* get_empty_json_string_impl(void) {
 	JsonString* const string = RC_ALLOC(JsonString, json_string_destroy_impl);
 
-	if(string == NULL) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		return NULL;     // GCOVR_EXCL_LINE
+	if(string == NULL) {
+		return NULL;
 	}
 
 	string->value = TVEC_EMPTY(Utf8Codepoint);
@@ -347,8 +347,8 @@ NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* const json_object,
                                                  const tstr* const key, const JsonValue value) {
 	JsonString* key_string = json_get_string_from_tstr(key);
 
-	if(key_string == NULL) {           // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		return TSTR_STATIC_LIT("OOM"); // GCOVR_EXCL_LINE
+	if(key_string == NULL) {
+		return TSTR_STATIC_LIT("OOM");
 	}
 
 	return json_object_add_entry_dup(json_object, key_string, value);
@@ -358,8 +358,8 @@ NODISCARD tstr_static json_object_add_entry_cstr(JsonObject* json_object, const 
                                                  JsonValue value) {
 	JsonString* key_string = json_get_string_from_cstr(key);
 
-	if(key_string == NULL) {           // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		return TSTR_STATIC_LIT("OOM"); // GCOVR_EXCL_LINE
+	if(key_string == NULL) {
+		return TSTR_STATIC_LIT("OOM");
 	}
 
 	return json_object_add_entry_dup(json_object, key_string, value);
@@ -541,9 +541,9 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 
 		JsonObject* const object = json_object_get_empty();
 
-		if(object == NULL) {                    // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-			return new_json_parse_result_error( // GCOVR_EXCL_LINE
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM"))); // GCOVR_EXCL_LINE
+		if(object == NULL) {
+			return new_json_parse_result_error(
+			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
 		}
 
 		return new_json_parse_result_ok(new_json_value_object_rc(object));
@@ -551,9 +551,8 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 
 	JsonObject* const object = json_object_get_empty();
 
-	if(object == NULL) {                    // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		return new_json_parse_result_error( // GCOVR_EXCL_LINE
-		    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM"))); // GCOVR_EXCL_LINE
+	if(object == NULL) {
+		return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
 	}
 
 #define FREE_AT_END() \
@@ -632,8 +631,8 @@ static void json_array_destroy_impl(JsonArray* const json_arr) { // NOLINT(misc-
 NODISCARD JsonArray* json_array_get_empty(void) {
 	JsonArray* const array = RC_ALLOC(JsonArray, json_array_destroy_impl);
 
-	if(array == NULL) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		return NULL;    // GCOVR_EXCL_LINE
+	if(array == NULL) {
+		return NULL;
 	}
 
 	array->value = TVEC_EMPTY(JsonValue);
@@ -644,8 +643,8 @@ NODISCARD tstr_static json_array_add_entry(JsonArray* const json_array, const Js
 
 	const TvecResult result = TVEC_PUSH(JsonValue, &(json_array->value), entry);
 
-	if(result != TvecResultOk) {                        // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		return TSTR_STATIC_LIT("json array add error"); // GCOVR_EXCL_LINE
+	if(result != TvecResultOk) {
+		return TSTR_STATIC_LIT("json array add error");
 	}
 
 	return tstr_static_null();
@@ -676,9 +675,9 @@ json_parse_impl_parse_array_value(JsonParseState* const state, // NOLINT(misc-no
 
 	const tstr_static add_result = json_array_add_entry(json_array, value);
 
-	if(!tstr_static_is_null(add_result)) {                 // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		FREE_AT_END();                                     // GCOVR_EXCL_LINE
-		return make_json_error_at(state->loc, add_result); // GCOVR_EXCL_LINE
+	if(!tstr_static_is_null(add_result)) {
+		FREE_AT_END();
+		return make_json_error_at(state->loc, add_result);
 	}
 
 	return json_error_none(state->loc);
@@ -756,9 +755,9 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 
 		JsonArray* const array = json_array_get_empty();
 
-		if(array == NULL) {                     // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-			return new_json_parse_result_error( // GCOVR_EXCL_LINE
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM"))); // GCOVR_EXCL_LINE
+		if(array == NULL) {
+			return new_json_parse_result_error(
+			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
 		}
 
 		return new_json_parse_result_ok(new_json_value_array_rc(array));
@@ -766,9 +765,8 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 
 	JsonArray* const array = json_array_get_empty();
 
-	if(array == NULL) {                     // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		return new_json_parse_result_error( // GCOVR_EXCL_LINE
-		    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM"))); // GCOVR_EXCL_LINE
+	if(array == NULL) {
+		return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
 	}
 
 #define FREE_AT_END() \
@@ -1279,8 +1277,8 @@ NODISCARD static tstr_static json_string_add_char_impl(JsonString* const json_st
 
 	const TvecResult result = TVEC_PUSH(Utf8Codepoint, &(json_string->value), codepoint);
 
-	if(result != TvecResultOk) {                         // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		return TSTR_STATIC_LIT("json string add error"); // GCOVR_EXCL_LINE
+	if(result != TvecResultOk) {
+		return TSTR_STATIC_LIT("json string add error");
 	}
 
 	return tstr_static_null();
@@ -1470,10 +1468,9 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 		//
 	add_codepoint_raw:
 		const tstr_static string_add_result = json_string_add_char_impl(string, codepoint);
-		if(!tstr_static_is_null(string_add_result)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-			FREE_AT_END();                            // GCOVR_EXCL_LINE
-			return new_json_parse_result_error(       // GCOVR_EXCL_LINE
-			    make_json_error_at(state->loc, string_add_result)); // GCOVR_EXCL_LINE
+		if(!tstr_static_is_null(string_add_result)) {
+			FREE_AT_END();
+			return new_json_parse_result_error(make_json_error_at(state->loc, string_add_result));
 		}
 
 		continue;
