@@ -483,7 +483,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 	// value-separator = ws %x2C ws  ; , comma
 
 	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		// NOTE: unrecreachable, as all thecalling functions make sure,. that we have at least '{'
+		// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least '{'
 		// as char, but this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return new_json_parse_result_error(make_json_error_at(
@@ -495,7 +495,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 		json_parse_impl_skip_ws(state);
 
 		if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-			// NOTE: unrecreachable, as all thecalling functions make sure,. that we have at least
+			// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
 			// '{'
 			// as char, but this might be usefull, if we ever expose this function
 			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
@@ -506,7 +506,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 		const LibCChar next_value = json_parse_state_peek_next_char(*state);
 
 		if(next_value != '{') { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-			// NOTE: unrecreachable, as all thecalling functions make sure,. that we have at least
+			// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
 			// '{'
 			// as char, but this might be usefull, if we ever expose this function
 			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
@@ -632,8 +632,8 @@ static void json_array_destroy_impl(JsonArray* const json_arr) { // NOLINT(misc-
 NODISCARD JsonArray* json_array_get_empty(void) {
 	JsonArray* const array = RC_MALLOC(JsonArray, json_array_destroy_impl);
 
-	if(array == NULL) {
-		return NULL;
+	if(array == NULL) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return NULL;    // GCOVR_EXCL_LINE
 	}
 
 	array->value = TVEC_EMPTY(JsonValue);
@@ -644,8 +644,8 @@ NODISCARD tstr_static json_array_add_entry(JsonArray* const json_array, const Js
 
 	const TvecResult result = TVEC_PUSH(JsonValue, &(json_array->value), entry);
 
-	if(result != TvecResultOk) {
-		return TSTR_STATIC_LIT("json array add error");
+	if(result != TvecResultOk) {                        // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return TSTR_STATIC_LIT("json array add error"); // GCOVR_EXCL_LINE
 	}
 
 	return tstr_static_null();
@@ -662,7 +662,7 @@ json_parse_impl_parse_array_value(JsonParseState* const state, // NOLINT(misc-no
 
 	const JsonParseResult value_result = json_parse_impl_parse_value(state);
 
-	IF_JSON_PARSE_RESULT_IS_ERROR_CONST(value_result) {
+	IF_JSON_PARSE_RESULT_IS_ERROR_CONST(value_result) { // GCOVR_EXCL_BR_WITHOUT_HIT: 2/6
 		return error;
 	}
 
@@ -676,9 +676,9 @@ json_parse_impl_parse_array_value(JsonParseState* const state, // NOLINT(misc-no
 
 	const tstr_static add_result = json_array_add_entry(json_array, value);
 
-	if(!tstr_static_is_null(add_result)) {
-		FREE_AT_END();
-		return make_json_error_at(state->loc, add_result);
+	if(!tstr_static_is_null(add_result)) {                 // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		FREE_AT_END();                                     // GCOVR_EXCL_LINE
+		return make_json_error_at(state->loc, add_result); // GCOVR_EXCL_LINE
 	}
 
 	return json_error_none(state->loc);
@@ -696,7 +696,12 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 	// end-array       = ws %x5D ws  ; ] right square bracket
 	// value-separator = ws %x2C ws  ; , comma
 
-	if(json_parse_state_is_eof(*state)) {
+	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
+		// '['
+		// as char, but this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
+
 		return new_json_parse_result_error(
 		    make_json_error_at(state->loc, TSTR_STATIC_LIT("empty array: missing 'begin-array'")));
 	}
@@ -705,26 +710,27 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 
 		json_parse_impl_skip_ws(state);
 
-		if(json_parse_state_is_eof(*state)) {
+		if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+			// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
+			// '['
+			// as char, but this might be usefull, if we ever expose this function
+			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 			return new_json_parse_result_error(
 			    make_json_error_at(state->loc, TSTR_STATIC_LIT("empty array: missing '['")));
 		}
 
 		const LibCChar next_value = json_parse_state_peek_next_char(*state);
 
-		if(next_value != '[') {
+		if(next_value != '[') { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+			// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
+			// '['
+			// as char, but this might be usefull, if we ever expose this function
+			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 			return new_json_parse_result_error(
 			    make_json_error_at(state->loc, TSTR_STATIC_LIT("wrong begin-array: expected '['")));
 		}
 
 		json_parse_state_skip_by(state, 1, true);
-
-		json_parse_impl_skip_ws(state);
-
-		if(json_parse_state_is_eof(*state)) {
-			return new_json_parse_result_error(
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("empty array: <EOF> after '['")));
-		}
 	}
 
 	// either end-array or value
@@ -746,11 +752,13 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 
 		json_parse_impl_skip_ws(state);
 
+		// fast path: return empty array
+
 		JsonArray* const array = json_array_get_empty();
 
-		if(array == NULL) {
-			return new_json_parse_result_error(
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
+		if(array == NULL) {                     // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+			return new_json_parse_result_error( // GCOVR_EXCL_LINE
+			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM"))); // GCOVR_EXCL_LINE
 		}
 
 		return new_json_parse_result_ok(new_json_value_array_rc(array));
@@ -758,8 +766,9 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 
 	JsonArray* const array = json_array_get_empty();
 
-	if(array == NULL) {
-		return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
+	if(array == NULL) {                     // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return new_json_parse_result_error( // GCOVR_EXCL_LINE
+		    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM"))); // GCOVR_EXCL_LINE
 	}
 
 #define FREE_AT_END() \
@@ -803,7 +812,8 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 			if(end_char != ',') {
 				FREE_AT_END();
 				return new_json_parse_result_error(make_json_error_at(
-				    state->loc, TSTR_STATIC_LIT("invalid continuation of values in array")));
+				    state->loc,
+				    TSTR_STATIC_LIT("invalid continuation of values in array: expected ','")));
 			}
 
 			{
