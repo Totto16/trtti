@@ -1279,8 +1279,8 @@ NODISCARD static tstr_static json_string_add_char_impl(JsonString* const json_st
 
 	const TvecResult result = TVEC_PUSH(Utf8Codepoint, &(json_string->value), codepoint);
 
-	if(result != TvecResultOk) {
-		return TSTR_STATIC_LIT("json string add error");
+	if(result != TvecResultOk) {                         // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return TSTR_STATIC_LIT("json string add error"); // GCOVR_EXCL_LINE
 	}
 
 	return tstr_static_null();
@@ -1306,7 +1306,10 @@ new_utf8_next_char_result_ok(Utf8Codepoint const ok) {
 
 NODISCARD static Utf8NextCharResult utf8_get_next_char_and_consume(JsonParseState* const state) {
 
-	if(json_parse_state_is_eof(*state)) {
+	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: unrecreachable, as all the calling functions make sure,. that we are not eof, but
+		// this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return new_utf8_next_char_result_error(make_json_error_at(
 		    state->loc, TSTR_STATIC_LIT("empty string: <EOF> when getting next char")));
 	}
@@ -1322,7 +1325,12 @@ NODISCARD static Utf8NextCharResult utf8_get_next_char_and_consume(JsonParseStat
 		    make_json_error_at(state->loc, tstr_static_from_static_cstr(utf8proc_errmsg(result))));
 	}
 
-	if(result == 0) {
+	if(result == 0) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: utf8proc_iterate only returns 0, when strlen is 0, but we already checked that and
+		// its > 0, so this never happens
+
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
+
 		return new_utf8_next_char_result_error(
 		    make_json_error_at(state->loc, TSTR_STATIC_LIT("invalid codepoint length")));
 	}
