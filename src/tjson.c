@@ -483,7 +483,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 	// value-separator = ws %x2C ws  ; , comma
 
 	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least '{'
+		// NOTE: unreachable, as all the calling functions make sure,. that we have at least '{'
 		// as char, but this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return new_json_parse_result_error(make_json_error_at(
@@ -495,7 +495,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 		json_parse_impl_skip_ws(state);
 
 		if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-			// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
+			// NOTE: unreachable, as all the calling functions make sure,. that we have at least
 			// '{'
 			// as char, but this might be usefull, if we ever expose this function
 			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
@@ -506,7 +506,7 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 		const LibCChar next_value = json_parse_state_peek_next_char(*state);
 
 		if(next_value != '{') { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-			// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
+			// NOTE: unreachable, as all the calling functions make sure,. that we have at least
 			// '{'
 			// as char, but this might be usefull, if we ever expose this function
 			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
@@ -697,7 +697,7 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 	// value-separator = ws %x2C ws  ; , comma
 
 	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
+		// NOTE: unreachable, as all the calling functions make sure,. that we have at least
 		// '['
 		// as char, but this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
@@ -711,7 +711,7 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 		json_parse_impl_skip_ws(state);
 
 		if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-			// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
+			// NOTE: unreachable, as all the calling functions make sure,. that we have at least
 			// '['
 			// as char, but this might be usefull, if we ever expose this function
 			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
@@ -722,7 +722,7 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 		const LibCChar next_value = json_parse_state_peek_next_char(*state);
 
 		if(next_value != '[') { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-			// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least
+			// NOTE: unreachable, as all the calling functions make sure,. that we have at least
 			// '['
 			// as char, but this might be usefull, if we ever expose this function
 			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
@@ -845,7 +845,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_int_part(JsonParseState*
 	// zero = %x30                ; 0
 
 	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		// NOTE: unrecreachable, as all the calling functions make sure,. that we have not EOF
+		// NOTE: unreachable, as all the calling functions make sure,. that we have not EOF
 		// but this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(state->loc, TSTR_STATIC_LIT("empty number int part"));
@@ -907,7 +907,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_frac_part(JsonParseState
 	// decimal-point = %x2E       ; .
 
 	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		// NOTE: unrecreachable, as all the calling functions make sure,. that we have '.' as char
+		// NOTE: unreachable, as all the calling functions make sure,. that we have '.' as char
 		// but this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(
@@ -917,7 +917,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_frac_part(JsonParseState
 	const LibCChar next_char = json_parse_state_peek_next_char(*state);
 
 	if(next_char != '.') { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		// NOTE: unrecreachable, as all the calling functions make sure,. that we have '.' as char
+		// NOTE: unreachable, as all the calling functions make sure,. that we have '.' as char
 		// but this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(state->loc,
@@ -988,7 +988,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState*
 	// plus = %x2B                ; +
 
 	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		// NOTE: unrecreachable, as all the calling functions make sure,. that we have 'e' or 'E' as
+		// NOTE: unreachable, as all the calling functions make sure,. that we have 'e' or 'E' as
 		// char but this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(
@@ -999,7 +999,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState*
 	const LibCChar next_char = json_parse_state_peek_next_char(*state);
 
 	if(next_char != 'e' && next_char != 'E') { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/4
-		// NOTE: unrecreachable, as all the calling functions make sure,. that we have 'e' or 'E' as
+		// NOTE: unreachable, as all the calling functions make sure,. that we have 'e' or 'E' as
 		// char but this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(
@@ -1118,7 +1118,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 	bool minus = false;
 
 	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least '-'
+		// NOTE: unreachable, as all the calling functions make sure,. that we have at least '-'
 		// or '0'..'9' as char, but this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return new_json_parse_result_error(make_json_error_at(
@@ -1307,7 +1307,7 @@ new_utf8_next_char_result_ok(Utf8Codepoint const ok) {
 NODISCARD static Utf8NextCharResult utf8_get_next_char_and_consume(JsonParseState* const state) {
 
 	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
-		// NOTE: unrecreachable, as all the calling functions make sure,. that we are not eof, but
+		// NOTE: unreachable, as all the calling functions make sure,. that we are not eof, but
 		// this might be usefull, if we ever expose this function
 		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return new_utf8_next_char_result_error(make_json_error_at(
@@ -1357,7 +1357,11 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 	//  quotation-mark = %x22      ; "
 	//  unescaped = %x20-21 / %x23-5B / %x5D-10FFFF
 
-	if(json_parse_state_is_eof(*state)) {
+	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: unreachable, as all the calling functions make sure,. that we are not EOF (note NOT
+		// that we have '"'), but this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
+
 		return new_json_parse_result_error(make_json_error_at(
 		    state->loc, TSTR_STATIC_LIT("empty string: expected '\"' but got <EOF>")));
 	}
@@ -1398,47 +1402,58 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 			return new_json_parse_result_error(result.data.error);
 		}
 
-		assert(!result.is_error);
+		assert(!result.is_error); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
 		Utf8Codepoint codepoint = result.data.ok;
 
-		if(codepoint < 0) {
+		if(codepoint < 0) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+			// NOTE: i am not sure why the codepoint is signed, as i can't find a way, to produce a
+			// codpoint that is negative, it isn't for error reporting, as for that we use a
+			// separate variable and Unicode only allows positive values, so no clue, so this is a
+			// safeguard, but can#t really be covered
+			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 			FREE_AT_END();
 			return new_json_parse_result_error(make_json_error_at(
 			    state->loc, TSTR_STATIC_LIT("invalid string char: range (-inf, 0)")));
 		}
 
-		if(codepoint >= 0 && codepoint < 0x20) { // NOLINT(readability-magic-numbers)
+		// NOLINTBEGIN(readability-magic-numbers)
+
+		if(codepoint >= 0 && // GCOVR_EXCL_BR_WITHOUT_HIT: 1/4
+		   codepoint < 0x20) {
 			FREE_AT_END();
 
 			static_assert(JSON_NEWLINE_CHAR_FOR_LOCATION >= 0 &&
-			              JSON_NEWLINE_CHAR_FOR_LOCATION <=
-			                  0x020); // NOLINT(readability-magic-numbers)
+			              JSON_NEWLINE_CHAR_FOR_LOCATION <= 0x020);
 
 			return new_json_parse_result_error(make_json_error_at(
 			    state->loc, TSTR_STATIC_LIT("invalid string char: range [0, 0x20)")));
 		}
 
-		if(codepoint >= 0x20 && codepoint <= 0x21) { // NOLINT(readability-magic-numbers)
+		if(codepoint >= 0x20 && codepoint <= 0x21) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/4
 			goto add_codepoint_raw;
 		}
 
 		if(codepoint == '"') {
-			static_assert(0x22 == '"'); // NOLINT(readability-magic-numbers)
+			static_assert(0x22 == '"');
 			break;
 		}
 
-		if(codepoint >= 0x23 && codepoint <= 0x5B) { // NOLINT(readability-magic-numbers)
+		if(codepoint >= 0x23 && codepoint <= 0x5B) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/4
 			goto add_codepoint_raw;
 		}
 
 		if(codepoint == '\\') {
-			static_assert(0x5C == '\\'); // NOLINT(readability-magic-numbers)
+			static_assert(0x5C == '\\');
 			goto escape_logic;
 		}
 
-		if(codepoint >= 0x5D && codepoint <= 0x10FFFF) { // NOLINT(readability-magic-numbers)
+		if(codepoint >= 0x5D && codepoint <= 0x10FFFF) { // GCOVR_EXCL_BR_WITHOUT_HIT: 2/4
 			goto add_codepoint_raw;
 		}
+
+		// NOTE: utf8proc never returns such a code, as it is invalid utf8 and is caught earlier!
+
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 
 		FREE_AT_END();
 		return new_json_parse_result_error(make_json_error_at(
@@ -1450,9 +1465,10 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 		//
 	add_codepoint_raw:
 		const tstr_static string_add_result = json_string_add_char_impl(string, codepoint);
-		if(!tstr_static_is_null(string_add_result)) {
-			FREE_AT_END();
-			return new_json_parse_result_error(make_json_error_at(state->loc, string_add_result));
+		if(!tstr_static_is_null(string_add_result)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+			FREE_AT_END();                            // GCOVR_EXCL_LINE
+			return new_json_parse_result_error(       // GCOVR_EXCL_LINE
+			    make_json_error_at(state->loc, string_add_result)); // GCOVR_EXCL_LINE
 		}
 
 		continue;
@@ -1469,44 +1485,44 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 		const LibCChar escape_char = json_parse_state_get_next_char(state);
 
 		if(escape_char == '"') {
-			static_assert(0x22 == '"'); // NOLINT(readability-magic-numbers)
+			static_assert(0x22 == '"');
 			codepoint = '"';
 			goto add_codepoint_raw;
 		} else if(escape_char == '\\') {
-			static_assert(0x5C == '\\'); // NOLINT(readability-magic-numbers)
+			static_assert(0x5C == '\\');
 			codepoint = '\\';
 			goto add_codepoint_raw;
 		} else if(escape_char == '/') {
-			static_assert(0x2F == '/'); // NOLINT(readability-magic-numbers)
+			static_assert(0x2F == '/');
 			codepoint = '/';
 			goto add_codepoint_raw;
 		} else if(escape_char == 'b') {
-			static_assert(0x62 == 'b');  // NOLINT(readability-magic-numbers)
-			static_assert(0x08 == '\b'); // NOLINT(readability-magic-numbers)
+			static_assert(0x62 == 'b');
+			static_assert(0x08 == '\b');
 			codepoint = '\b';
 			goto add_codepoint_raw;
 		} else if(escape_char == 'f') {
-			static_assert(0x66 == 'f');  // NOLINT(readability-magic-numbers)
-			static_assert(0x0C == '\f'); // NOLINT(readability-magic-numbers)
+			static_assert(0x66 == 'f');
+			static_assert(0x0C == '\f');
 			codepoint = '\f';
 			goto add_codepoint_raw;
 		} else if(escape_char == 'n') {
-			static_assert(0x6E == 'n');  // NOLINT(readability-magic-numbers)
-			static_assert(0x0A == '\n'); // NOLINT(readability-magic-numbers)
+			static_assert(0x6E == 'n');
+			static_assert(0x0A == '\n');
 			codepoint = '\n';
 			goto add_codepoint_raw;
 		} else if(escape_char == 'r') {
-			static_assert(0x72 == 'r');  // NOLINT(readability-magic-numbers)
-			static_assert(0x0D == '\r'); // NOLINT(readability-magic-numbers)
+			static_assert(0x72 == 'r');
+			static_assert(0x0D == '\r');
 			codepoint = '\r';
 			goto add_codepoint_raw;
 		} else if(escape_char == 't') {
-			static_assert(0x74 == 't');  // NOLINT(readability-magic-numbers)
-			static_assert(0x09 == '\t'); // NOLINT(readability-magic-numbers)
+			static_assert(0x74 == 't');
+			static_assert(0x09 == '\t');
 			codepoint = '\t';
 			goto add_codepoint_raw;
 		} else if(escape_char == 'u') {
-			static_assert(0x75 == 'u'); // NOLINT(readability-magic-numbers)
+			static_assert(0x75 == 'u');
 
 			if(json_parse_state_get_str_len(*state) < 4) {
 				FREE_AT_END();
@@ -1527,9 +1543,9 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 				if(value >= '0' && value <= '9') {
 					num = (uint8_t)(value - '0');
 				} else if(value >= 'A' && value <= 'F') {
-					num = (uint8_t)(value - 'A') + 10; // NOLINT(readability-magic-numbers)
+					num = (uint8_t)(value - 'A') + 10;
 				} else if(value >= 'a' && value <= 'f') {
-					num = (uint8_t)(value - 'a') + 10; // NOLINT(readability-magic-numbers)
+					num = (uint8_t)(value - 'a') + 10;
 				} else {
 					FREE_AT_END();
 					return new_json_parse_result_error(make_json_error_at(
@@ -1538,8 +1554,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 					        "invalid string escape sequence: unicode escape has invalid digits")));
 				}
 
-				composed_codepoint =
-				    (composed_codepoint * 0x10) + num; // NOLINT(readability-magic-numbers)
+				composed_codepoint = (composed_codepoint * 0x10) + num;
 			}
 			json_parse_state_skip_by(state, 4, true);
 
@@ -1553,6 +1568,8 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 			    TSTR_STATIC_LIT("invalid string escape sequence: not a recognized escape char")));
 		}
 	}
+
+	// NOLINTEND(readability-magic-numbers)
 
 	return new_json_parse_result_ok(new_json_value_string_rc(string));
 }
@@ -1878,8 +1895,6 @@ NODISCARD static int8_t json_impl_escape_char_into(const Utf8Codepoint codepoint
 
 			char hex_buf[5]; // NOLINT(readability-magic-numbers)
 
-			// TODO(Totto): hit
-			assert(false);
 			const LibCInt result = snprintf(hex_buf, sizeof(hex_buf), "%04X", small_codepoint);
 			if(result != 4) {
 				return -1;
