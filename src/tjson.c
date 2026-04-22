@@ -482,7 +482,10 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 	// name-separator  = ws %x3A ws  ; : colon
 	// value-separator = ws %x2C ws  ; , comma
 
-	if(json_parse_state_is_eof(*state)) {
+	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: unrecreachable, as all thecalling functions make sure,. that we have at least '{'
+		// as char, but this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return new_json_parse_result_error(make_json_error_at(
 		    state->loc, TSTR_STATIC_LIT("empty object: missing 'begin-object'")));
 	}
@@ -491,26 +494,27 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 
 		json_parse_impl_skip_ws(state);
 
-		if(json_parse_state_is_eof(*state)) {
+		if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+			// NOTE: unrecreachable, as all thecalling functions make sure,. that we have at least
+			// '{'
+			// as char, but this might be usefull, if we ever expose this function
+			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 			return new_json_parse_result_error(
 			    make_json_error_at(state->loc, TSTR_STATIC_LIT("empty object: missing '{'")));
 		}
 
 		const LibCChar next_value = json_parse_state_peek_next_char(*state);
 
-		if(next_value != '{') {
+		if(next_value != '{') { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+			// NOTE: unrecreachable, as all thecalling functions make sure,. that we have at least
+			// '{'
+			// as char, but this might be usefull, if we ever expose this function
+			assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 			return new_json_parse_result_error(make_json_error_at(
 			    state->loc, TSTR_STATIC_LIT("wrong begin-object: expected '{'")));
 		}
 
 		json_parse_state_skip_by(state, 1, true);
-
-		json_parse_impl_skip_ws(state);
-
-		if(json_parse_state_is_eof(*state)) {
-			return new_json_parse_result_error(
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("empty object: <EOF> after '{'")));
-		}
 	}
 
 	// either member or a end-object
@@ -533,11 +537,13 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 
 		json_parse_impl_skip_ws(state);
 
+		// fast path: return empty object
+
 		JsonObject* const object = json_object_get_empty();
 
-		if(object == NULL) {
-			return new_json_parse_result_error(
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
+		if(object == NULL) {                    // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+			return new_json_parse_result_error( // GCOVR_EXCL_LINE
+			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM"))); // GCOVR_EXCL_LINE
 		}
 
 		return new_json_parse_result_ok(new_json_value_object_rc(object));
@@ -545,8 +551,9 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 
 	JsonObject* const object = json_object_get_empty();
 
-	if(object == NULL) {
-		return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
+	if(object == NULL) {                    // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return new_json_parse_result_error( // GCOVR_EXCL_LINE
+		    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM"))); // GCOVR_EXCL_LINE
 	}
 
 #define FREE_AT_END() \
@@ -590,7 +597,8 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 			if(end_char != ',') {
 				FREE_AT_END();
 				return new_json_parse_result_error(make_json_error_at(
-				    state->loc, TSTR_STATIC_LIT("invalid continuation of member in object")));
+				    state->loc,
+				    TSTR_STATIC_LIT("invalid continuation of member in object: expected ','")));
 			}
 
 			{
