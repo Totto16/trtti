@@ -21,7 +21,7 @@ typedef enum {
 	AllocatorFunctionTypeRealloc,
 } AllocatorFunctionType;
 
-typedef struct AllocatorFunctionHandle AllocatorFunctionHandle;
+typedef struct AllocatorFunctionHandleImpl AllocatorFunctionHandle;
 
 AllocatorFunctionHandle* tjson_coverage_allocator_get_handle(AllocatorFunctionType type);
 
