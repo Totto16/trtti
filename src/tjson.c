@@ -391,16 +391,17 @@ json_parse_impl_parse_object_member(JsonParseState* const state, // NOLINT(misc-
 
 	const JsonParseResult string_result = json_parse_impl_parse_string(state);
 
-	IF_JSON_PARSE_RESULT_IS_ERROR_CONST(string_result) {
+	IF_JSON_PARSE_RESULT_IS_ERROR_CONST(string_result) { // GCOVR_EXCL_BR_WITHOUT_HIT: 2/6
 		return error;
 	}
 
 	const JsonValue key_raw = json_parse_result_get_as_ok(string_result);
 
-	IF_JSON_VALUE_IS_NOT_STRING(key_raw) {
-		return make_json_error_at(
+	IF_JSON_VALUE_IS_NOT_STRING(key_raw) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return make_json_error_at(         // GCOVR_EXCL_LINE
 		    state->loc,
-		    TSTR_STATIC_LIT("implementation error: string parser didn't return a string"));
+		    TSTR_STATIC_LIT(                                                    // GCOVR_EXCL_LINE
+		        "implementation error: string parser didn't return a string")); // GCOVR_EXCL_LINE
 	}
 
 	JsonString* key = json_value_get_as_string(key_raw);
@@ -426,15 +427,17 @@ json_parse_impl_parse_object_member(JsonParseState* const state, // NOLINT(misc-
 
 		if(next_value != ':') {
 			FREE_AT_END();
-			return make_json_error_at(state->loc, TSTR_STATIC_LIT("wrong name-separator"));
+			return make_json_error_at(state->loc,
+			                          TSTR_STATIC_LIT("wrong name-separator: expected ':'"));
 		}
 
 		json_parse_state_skip_by(state, 1, true);
 
 		if(json_parse_state_is_eof(*state)) {
+			FREE_AT_END();
 			return make_json_error_at(
 			    state->loc,
-			    TSTR_STATIC_LIT("empty object member: mssing value after 'name-separator'"));
+			    TSTR_STATIC_LIT("empty object member: missing value after 'name-separator'"));
 		}
 
 		json_parse_impl_skip_ws(state);
@@ -442,7 +445,7 @@ json_parse_impl_parse_object_member(JsonParseState* const state, // NOLINT(misc-
 
 	const JsonParseResult value_result = json_parse_impl_parse_value(state);
 
-	IF_JSON_PARSE_RESULT_IS_ERROR_CONST(value_result) {
+	IF_JSON_PARSE_RESULT_IS_ERROR_CONST(value_result) { // GCOVR_EXCL_BR_WITHOUT_HIT: 2/6
 		FREE_AT_END();
 		return error;
 	}
@@ -452,9 +455,6 @@ json_parse_impl_parse_object_member(JsonParseState* const state, // NOLINT(misc-
 #undef FREE_AT_END
 #define FREE_AT_END() \
 	do { \
-		if(key != NULL) { \
-			free_json_string(key); \
-		} \
 		free_json_value(&value); \
 	} while(false)
 
@@ -499,8 +499,8 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 		const LibCChar next_value = json_parse_state_peek_next_char(*state);
 
 		if(next_value != '{') {
-			return new_json_parse_result_error(
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("wrong begin-object")));
+			return new_json_parse_result_error(make_json_error_at(
+			    state->loc, TSTR_STATIC_LIT("wrong begin-object: expected '{'")));
 		}
 
 		json_parse_state_skip_by(state, 1, true);
@@ -706,7 +706,7 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 
 		if(next_value != '[') {
 			return new_json_parse_result_error(
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("wrong begin-array")));
+			    make_json_error_at(state->loc, TSTR_STATIC_LIT("wrong begin-array: expected '['")));
 		}
 
 		json_parse_state_skip_by(state, 1, true);
@@ -887,7 +887,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_frac_part(JsonParseState
 
 	if(json_parse_state_is_eof(*state)) {
 		return make_json_error_at(
-		    state->loc, TSTR_STATIC_LIT("empty number frac part: expected '.' but got eof"));
+		    state->loc, TSTR_STATIC_LIT("empty number frac part: expected '.' but got <EOF>"));
 	}
 
 	const LibCChar next_char = json_parse_state_peek_next_char(*state);
@@ -947,7 +947,8 @@ NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState*
 
 	if(json_parse_state_is_eof(*state)) {
 		return make_json_error_at(
-		    state->loc, TSTR_STATIC_LIT("empty number exp part: expected 'e' or 'E' but got eof"));
+		    state->loc,
+		    TSTR_STATIC_LIT("empty number exp part: expected 'e' or 'E' but got <EOF>"));
 	}
 
 	const LibCChar next_char = json_parse_state_peek_next_char(*state);
@@ -1062,7 +1063,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 
 	if(json_parse_state_is_eof(*state)) {
 		return new_json_parse_result_error(make_json_error_at(
-		    state->loc, TSTR_STATIC_LIT("empty number: expected number-start but got eof")));
+		    state->loc, TSTR_STATIC_LIT("empty number: expected number-start but got <EOF>")));
 	}
 
 	const LibCChar minus_char = json_parse_state_peek_next_char(*state);
@@ -1289,14 +1290,14 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 
 	if(json_parse_state_is_eof(*state)) {
 		return new_json_parse_result_error(make_json_error_at(
-		    state->loc, TSTR_STATIC_LIT("empty string: expected '\"' but got eof")));
+		    state->loc, TSTR_STATIC_LIT("empty string: expected '\"' but got <EOF>")));
 	}
 
 	const LibCChar next_char = json_parse_state_peek_next_char(*state);
 
 	if(next_char != '"') {
 		return new_json_parse_result_error(
-		    make_json_error_at(state->loc, TSTR_STATIC_LIT("wrong quotation-mark")));
+		    make_json_error_at(state->loc, TSTR_STATIC_LIT("wrong quotation-mark: expected '\"'")));
 	}
 	json_parse_state_skip_by(state, 1, true);
 
@@ -1318,7 +1319,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 			FREE_AT_END();
 			return new_json_parse_result_error(make_json_error_at(
 			    state->loc,
-			    TSTR_STATIC_LIT("empty string: expected '\"' or string-char but got eof")));
+			    TSTR_STATIC_LIT("empty string: expected '\"' or string-char but got <EOF>")));
 		}
 
 		const Utf8NextCharResult result = utf8_get_next_char_and_consume(state);
@@ -1497,7 +1498,7 @@ json_parse_impl_parse_value(JsonParseState* const state) { // NOLINT(misc-no-rec
 
 	if(json_parse_state_is_eof(*state)) {
 		return new_json_parse_result_error(make_json_error_at(
-		    state->loc, TSTR_STATIC_LIT("empty value: expected value but got eof")));
+		    state->loc, TSTR_STATIC_LIT("empty value: expected value but got <EOF>")));
 	}
 
 	const LibCChar first_char = json_parse_state_peek_next_char(*state);
