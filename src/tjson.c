@@ -844,7 +844,10 @@ NODISCARD static JsonError json_parse_impl_parse_number_int_part(JsonParseState*
 	// digit1-9 = %x31-39         ; 1-9
 	// zero = %x30                ; 0
 
-	if(json_parse_state_is_eof(*state)) {
+	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: unrecreachable, as all the calling functions make sure,. that we have not EOF
+		// but this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(state->loc, TSTR_STATIC_LIT("empty number int part"));
 	}
 
