@@ -962,8 +962,23 @@ NODISCARD static JsonError json_parse_impl_parse_number_frac_part(JsonParseState
 	return json_error_none(state->loc);
 }
 
+// NOTE: we support maximal e-308 and e308, so that the number fits into a double, so use an
+// appropiate data type
+
+typedef int16_t JsonExpNum;
+
+#define MAX_EXPONENT_JSON_NUMBER_RAW 308
+#define MAX_EXPONENT_JSON_NUMBER ((JsonExpNum)MAX_EXPONENT_JSON_NUMBER_RAW)
+
+#define STATIC_ASSERT_SAME_TYPE(T1, T2) \
+	static_assert(_Generic((T1){ 0 }, T2: true, default: false), "Types are not the same")
+
+STATIC_ASSERT_SAME_TYPE(JsonExpNum, int16_t);
+static_assert(INT16_MAX > MAX_EXPONENT_JSON_NUMBER);
+static_assert(INT16_MIN < (-(MAX_EXPONENT_JSON_NUMBER)));
+
 NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState* const state,
-                                                                 int64_t* const out_result) {
+                                                                 JsonExpNum* const out_result) {
 
 	// see: https://datatracker.ietf.org/doc/html/rfc8259#section-6
 	//      exp = e [ minus / plus ] 1*DIGIT
@@ -972,7 +987,10 @@ NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState*
 	// minus = %x2D               ; -
 	// plus = %x2B                ; +
 
-	if(json_parse_state_is_eof(*state)) {
+	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: unrecreachable, as all the calling functions make sure,. that we have 'e' or 'E' as
+		// char but this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(
 		    state->loc,
 		    TSTR_STATIC_LIT("empty number exp part: expected 'e' or 'E' but got <EOF>"));
@@ -980,7 +998,10 @@ NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState*
 
 	const LibCChar next_char = json_parse_state_peek_next_char(*state);
 
-	if(next_char != 'e' && next_char != 'E') {
+	if(next_char != 'e' && next_char != 'E') { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/4
+		// NOTE: unrecreachable, as all the calling functions make sure,. that we have 'e' or 'E' as
+		// char but this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(
 		    state->loc, TSTR_STATIC_LIT("wrong number exp part: missing starting 'e' / 'E'"));
 	}
@@ -1018,7 +1039,7 @@ NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState*
 		                          TSTR_STATIC_LIT("invalid number exp part: incorrect start"));
 	}
 
-	int64_t value = (first_value - '0');
+	JsonExpNum value = (JsonExpNum)(first_value - '0');
 	json_parse_state_skip_by(state, 1, true);
 
 	while(true) {
@@ -1032,16 +1053,23 @@ NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState*
 			break;
 		}
 
-		const int64_t previous_value = value;
-
-		value = (value * 10) + (next_value - '0'); // NOLINT(readability-magic-numbers)
+		value =
+		    (JsonExpNum)((value * 10) + (next_value - '0')); // NOLINT(readability-magic-numbers)
 		json_parse_state_skip_by(state, 1, true);
 
-		if(previous_value > value) {
-			// overflow detected
+		if(value > MAX_EXPONENT_JSON_NUMBER) {
+
+#define TJSON_STR(x) #x
+#define TJSON_XSTR(x) TJSON_STR(x)
+
+			// larger than the supported value
 			return make_json_error_at(
 			    state->loc,
-			    TSTR_STATIC_LIT("invalid number exp part: value overflowed a 64 bit number!"));
+			    TSTR_STATIC_LIT("invalid number exp part: value overflowed the maximum allowed "
+			                    "exponent " TJSON_XSTR(MAX_EXPONENT_JSON_NUMBER_RAW) "!"));
+
+#undef TJSON_STR
+#undef TJSON_XSTR
 		}
 	}
 
@@ -1049,27 +1077,28 @@ NODISCARD static JsonError json_parse_impl_parse_number_exp_part(JsonParseState*
 	// the spec?
 
 	// TODO(Totto): check if this overflow when using -
-	*out_result = minus ? -(value) : value; // NOLINT(readability-implicit-bool-conversion)
+	*out_result =
+	    minus ? (JsonExpNum)(-(value)) : value; // NOLINT(readability-implicit-bool-conversion)
 	return json_error_none(state->loc);
 }
 
-NODISCARD static double get_power_of_10(uint64_t value) {
+NODISCARD static double get_power_of_10(uint16_t value) {
 	// TODO(Totto): find a faster way than this
 	return pow(10.0, (double)value); // NOLINT(readability-magic-numbers)
 }
 
-NODISCARD static double json_number_make_value_int_exp(double int_value, int64_t exp) {
+NODISCARD static double json_number_make_value_int_exp(double int_value, JsonExpNum exp) {
 
 	if(exp == 0) {
 		return int_value;
 	}
 
 	if(exp < 0) {
-
-		return int_value / get_power_of_10((uint64_t)(-exp));
+		static_assert(sizeof(uint16_t) == sizeof(JsonExpNum));
+		return int_value / get_power_of_10((uint16_t)(-exp));
 	}
 
-	return int_value * get_power_of_10((uint64_t)exp);
+	return int_value * get_power_of_10((uint16_t)exp);
 }
 
 NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* const state) {
@@ -1128,7 +1157,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 	const LibCChar next_value = json_parse_state_peek_next_char(*state);
 
 	double frac = 0.0;
-	int64_t exp = 1;
+	JsonExpNum exp = 1;
 
 	bool saw_frac = false;
 	bool saw_exp = false;
@@ -1200,7 +1229,6 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 
 	// we are already finished
 	if(saw_exp) {
-		assert(false); // TODO(Totto)
 		assert(!saw_frac);
 
 		// have: minus + int + exp
