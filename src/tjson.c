@@ -1117,7 +1117,10 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 
 	bool minus = false;
 
-	if(json_parse_state_is_eof(*state)) {
+	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: unrecreachable, as all the calling functions make sure,. that we have at least '-'
+		// or '0'..'9' as char, but this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return new_json_parse_result_error(make_json_error_at(
 		    state->loc, TSTR_STATIC_LIT("empty number: expected number-start but got <EOF>")));
 	}
@@ -1209,7 +1212,7 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 			return new_json_parse_result_ok(new_json_value_number(number));
 		}
 
-		if(saw_exp) {
+		if(saw_exp) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
 
 #define JSON_NUMBER_FROM_MINUS_INT_EXP() \
 	{ \
@@ -1222,14 +1225,17 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 			return new_json_parse_result_ok(new_json_value_number(number));
 		}
 
-		return new_json_parse_result_error(make_json_error_at(
+		// reaching this is an IMPLEMENTATION error, as one of both should be set and the assert
+		// already covers that
+		return new_json_parse_result_error(make_json_error_at( // GCOVR_EXCL_LINE
 		    state->loc,
-		    TSTR_STATIC_LIT("implementation error in int + frac + exp number parsing")));
+		    TSTR_STATIC_LIT(                                                  // GCOVR_EXCL_LINE
+		        "implementation error in int + frac + exp number parsing"))); // GCOVR_EXCL_LINE
 	}
 
 	// we are already finished
 	if(saw_exp) {
-		assert(!saw_frac);
+		assert(!saw_frac); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
 
 		// have: minus + int + exp
 		const JsonNumber number = JSON_NUMBER_FROM_MINUS_INT_EXP();
@@ -1249,13 +1255,13 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 			return new_json_parse_result_error(exp_result);
 		}
 	} else {
-		assert(saw_frac);
+		assert(saw_frac); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
 		// have: minus + int + frac
 		const JsonNumber number = JSON_NUMBER_FROM_MINUS_INT_FRAC();
 		return new_json_parse_result_ok(new_json_value_number(number));
 	}
 
-	assert(saw_exp && saw_frac);
+	assert(saw_exp && saw_frac); // GCOVR_EXCL_BR_WITHOUT_HIT: 2/4
 
 #define JSON_NUMBER_FROM_MINUS_INT_FRAC_EXP() \
 	{ \
