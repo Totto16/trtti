@@ -179,17 +179,17 @@ NODISCARD JsonSourceLocation json_source_location_get_null(void) {
 }
 
 NODISCARD bool json_source_location_is_null(JsonSourceLocation location) {
-	SWITCH_JSON_SOURCE(location.source) {
-		CASE_JSON_SOURCE_IS_FILE_CONST(location.source) {
+	SWITCH_JSON_SOURCE(location.source) {                 // GCOVR_EXCL_BR_WITHOUT_HIT: 1/3
+		CASE_JSON_SOURCE_IS_FILE_CONST(location.source) { // GCOVR_EXCL_BR_WITHOUT_HIT: 2/4
 			return file.file_path == NULL;
 		}
-		VARIANT_CASE_END();
-		CASE_JSON_SOURCE_IS_STRING_CONST(location.source) {
+		VARIANT_CASE_END();                                 // GCOVR_EXCL_LINE
+		CASE_JSON_SOURCE_IS_STRING_CONST(location.source) { // GCOVR_EXCL_BR_WITHOUT_HIT: 2/4
 			return string.data.data == NULL;
 		}
-		VARIANT_CASE_END();
-		default: {
-			return false; // GCOVR_EXCL_BR_SOURCE (variant has no other type)
+		VARIANT_CASE_END(); // GCOVR_EXCL_LINE
+		default: {        // NOT_WORKING_ATM_GCOVR_ TODO EXCL_BR_SOURCE (variant has no other type)
+			return false; // GCOVR_EXCL_LINE
 		}
 	}
 }
@@ -267,8 +267,8 @@ static void json_object_destroy_impl(JsonObject* const json_obj) { // NOLINT(mis
 NODISCARD JsonObject* json_object_get_empty(void) {
 	JsonObject* const object = RC_MALLOC(JsonObject, json_object_destroy_impl);
 
-	if(object == NULL) {
-		return NULL;
+	if(object == NULL) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return NULL;     // GCOVR_EXCL_LINE
 	}
 
 	object->value = TMAP_EMPTY(JsonValueMapImpl);
@@ -282,18 +282,18 @@ NODISCARD static tstr_static json_object_add_entry_impl(JsonObject* const json_o
 	const TmapInsertResult result =
 	    TMAP_INSERT(JsonValueMapImpl, &(json_object->value), key, value, false);
 
-	switch(result) {
+	switch(result) { // GCOVR_EXCL_BR_WITHOUT_HIT: 2/4
 		case TmapInsertResultOk: {
 			return tstr_static_null();
 		}
-		case TmapInsertResultErr: {
-			return TSTR_STATIC_LIT("json object add error");
+		case TmapInsertResultErr: {                          // GCOVR_EXCL_LINE
+			return TSTR_STATIC_LIT("json object add error"); // GCOVR_EXCL_LINE
 		}
 		case TmapInsertResultWouldOverwrite: {
 			return TSTR_STATIC_LIT("json object has duplicate key");
 		}
-		default: {
-			return TSTR_STATIC_LIT("json object add unknown error");
+		default: {                                                   // GCOVR_EXCL_LINE
+			return TSTR_STATIC_LIT("json object add unknown error"); // GCOVR_EXCL_LINE
 		}
 	}
 }
@@ -305,8 +305,8 @@ static void json_string_destroy_impl(JsonString* const json_string) {
 NODISCARD static JsonString* get_empty_json_string_impl(void) {
 	JsonString* const string = RC_MALLOC(JsonString, json_string_destroy_impl);
 
-	if(string == NULL) {
-		return NULL;
+	if(string == NULL) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return NULL;     // GCOVR_EXCL_LINE
 	}
 
 	string->value = TVEC_EMPTY(Utf8Codepoint);
@@ -347,8 +347,8 @@ NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* const json_object,
                                                  const tstr* const key, const JsonValue value) {
 	JsonString* key_string = json_get_string_from_tstr(key);
 
-	if(key_string == NULL) {
-		return TSTR_STATIC_LIT("OOM");
+	if(key_string == NULL) {           // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return TSTR_STATIC_LIT("OOM"); // GCOVR_EXCL_LINE
 	}
 
 	return json_object_add_entry_dup(json_object, key_string, value);
@@ -358,8 +358,8 @@ NODISCARD tstr_static json_object_add_entry_cstr(JsonObject* json_object, const 
                                                  JsonValue value) {
 	JsonString* key_string = json_get_string_from_cstr(key);
 
-	if(key_string == NULL) {
-		return TSTR_STATIC_LIT("OOM");
+	if(key_string == NULL) {           // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		return TSTR_STATIC_LIT("OOM"); // GCOVR_EXCL_LINE
 	}
 
 	return json_object_add_entry_dup(json_object, key_string, value);
@@ -1172,8 +1172,8 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 
 	// we are already finished
 	if(saw_exp) {
-		assert(false);     // TODO(Totto)
-		assert(!saw_frac); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		assert(false); // TODO(Totto)
+		assert(!saw_frac);
 
 		// have: minus + int + exp
 		const JsonNumber number = JSON_NUMBER_FROM_MINUS_INT_EXP();
@@ -1193,13 +1193,13 @@ NODISCARD static JsonParseResult json_parse_impl_parse_number(JsonParseState* co
 			return new_json_parse_result_error(exp_result);
 		}
 	} else {
-		assert(saw_frac); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		assert(saw_frac);
 		// have: minus + int + frac
 		const JsonNumber number = JSON_NUMBER_FROM_MINUS_INT_FRAC();
 		return new_json_parse_result_ok(new_json_value_number(number));
 	}
 
-	assert(saw_exp && saw_frac); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+	assert(saw_exp && saw_frac);
 
 #define JSON_NUMBER_FROM_MINUS_INT_FRAC_EXP() \
 	{ \
