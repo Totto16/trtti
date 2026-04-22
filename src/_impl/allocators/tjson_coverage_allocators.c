@@ -56,10 +56,10 @@ static bool handle_should_fail_impl(AllocatorFunctionHandle* const handle) {
 			bool result = false;
 
 			if(*count == 0) {
-				result = false;
+				result = true;
 				goto change_to_never_fail;
 			} else {
-				result = true;
+				result = false;
 			}
 
 			(*count)--;

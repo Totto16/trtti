@@ -348,7 +348,8 @@ NODISCARD tstr_static json_object_add_entry_tstr(JsonObject* const json_object,
 	JsonString* key_string = json_get_string_from_tstr(key);
 
 	if(key_string == NULL) {
-		return TSTR_STATIC_LIT("OOM");
+		return TSTR_STATIC_LIT(
+		    "Internal OOM error: string allocation failed while adding an object entry by tstr");
 	}
 
 	return json_object_add_entry_dup(json_object, key_string, value);
@@ -359,7 +360,8 @@ NODISCARD tstr_static json_object_add_entry_cstr(JsonObject* json_object, const 
 	JsonString* key_string = json_get_string_from_cstr(key);
 
 	if(key_string == NULL) {
-		return TSTR_STATIC_LIT("OOM");
+		return TSTR_STATIC_LIT(
+		    "Internal OOM error: string allocation failed while adding an object entry by cstr");
 	}
 
 	return json_object_add_entry_dup(json_object, key_string, value);
@@ -542,8 +544,9 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 		JsonObject* const object = json_object_get_empty();
 
 		if(object == NULL) {
-			return new_json_parse_result_error(
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
+			return new_json_parse_result_error(make_json_error_at(
+			    state->loc, TSTR_STATIC_LIT("Internal OOM error: object allocation failed "
+			                                "while parsing an empty object")));
 		}
 
 		return new_json_parse_result_ok(new_json_value_object_rc(object));
@@ -552,7 +555,9 @@ json_parse_impl_parse_object(JsonParseState* const state) { // NOLINT(misc-no-re
 	JsonObject* const object = json_object_get_empty();
 
 	if(object == NULL) {
-		return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
+		return new_json_parse_result_error(make_json_error_at(
+		    state->loc, TSTR_STATIC_LIT("Internal OOM error: object allocation failed "
+		                                "while parsing an object")));
 	}
 
 #define FREE_AT_END() \
@@ -756,8 +761,9 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 		JsonArray* const array = json_array_get_empty();
 
 		if(array == NULL) {
-			return new_json_parse_result_error(
-			    make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
+			return new_json_parse_result_error(make_json_error_at(
+			    state->loc, TSTR_STATIC_LIT("Internal OOM error: array allocation failed "
+			                                "while parsing an empty array")));
 		}
 
 		return new_json_parse_result_ok(new_json_value_array_rc(array));
@@ -766,7 +772,9 @@ json_parse_impl_parse_array(JsonParseState* const state) { // NOLINT(misc-no-rec
 	JsonArray* const array = json_array_get_empty();
 
 	if(array == NULL) {
-		return new_json_parse_result_error(make_json_error_at(state->loc, TSTR_STATIC_LIT("OOM")));
+		return new_json_parse_result_error(make_json_error_at(
+		    state->loc, TSTR_STATIC_LIT("Internal OOM error: array allocation failed "
+		                                "while parsing an array")));
 	}
 
 #define FREE_AT_END() \
@@ -1380,8 +1388,9 @@ NODISCARD static JsonParseResult json_parse_impl_parse_string(JsonParseState* co
 	JsonString* const string = get_empty_json_string_impl();
 
 	if(string == NULL) {
-		return new_json_parse_result_error(
-		    make_json_error_at(state->loc, TSTR_STATIC_LIT("Internal OOM error")));
+		return new_json_parse_result_error(make_json_error_at(
+		    state->loc,
+		    TSTR_STATIC_LIT("Internal OOM error: string allocation failed while parsing one")));
 	}
 
 #define FREE_AT_END() \
