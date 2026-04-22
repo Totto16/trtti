@@ -906,14 +906,20 @@ NODISCARD static JsonError json_parse_impl_parse_number_frac_part(JsonParseState
 	//     frac = decimal-point 1*DIGIT
 	// decimal-point = %x2E       ; .
 
-	if(json_parse_state_is_eof(*state)) {
+	if(json_parse_state_is_eof(*state)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: unrecreachable, as all the calling functions make sure,. that we have '.' as char
+		// but this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(
 		    state->loc, TSTR_STATIC_LIT("empty number frac part: expected '.' but got <EOF>"));
 	}
 
 	const LibCChar next_char = json_parse_state_peek_next_char(*state);
 
-	if(next_char != '.') {
+	if(next_char != '.') { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+		// NOTE: unrecreachable, as all the calling functions make sure,. that we have '.' as char
+		// but this might be usefull, if we ever expose this function
+		assert(false && "IMPLEMENTATION ERROR"); // GCOVR_EXCL_LINE
 		return make_json_error_at(state->loc,
 		                          TSTR_STATIC_LIT("wrong number frac part: missing starting '.'"));
 	}
