@@ -1615,11 +1615,14 @@ json_parse_impl_parse_value(JsonParseState* const state) { // NOLINT(misc-no-rec
 				return json_parse_impl_parse_number(state);
 			}
 
-			if(json_parse_impl_is_ws(first_char)) {
-				return new_json_parse_result_error(make_json_error_at(
+			if(json_parse_impl_is_ws(first_char)) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
+				// NOTE: unrecreachable, as all the calling functions make sure,. that we skip ws
+				// before calling this function, but it's a good fallback, if we forget it somewhere
+
+				return new_json_parse_result_error(make_json_error_at( // GCOVR_EXCL_LINE
 				    state->loc,
-				    TSTR_STATIC_LIT(
-				        "implementation error, skip whitespace, before parsing 'value'")));
+				    TSTR_STATIC_LIT( // GCOVR_EXCL_LINE
+				        "implementation error, skip whitespace, before parsing 'value'"))); // GCOVR_EXCL_LINE
 			}
 
 			return new_json_parse_result_error(make_json_error_at(
