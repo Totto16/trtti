@@ -1579,12 +1579,11 @@ json_schema_validate_one_of_schema_raw_impl(const JsonSchemaOneOf* json_schema_o
 	}
 
 	// TODO(Totto): better error reporting
+	const size_t schema_amount = TVEC_LENGTH(JsonSchema, json_schema_one_of->values);
+
 	tstr error;
 	FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
-	            ,
-	            "JsonValue doesn't match one of the subschemas (NO ADDITIONAL CONTEXT IS PRINTED "
-	            "ATM, ptr of the one_of_struct %p)",
-	            (const void*)json_schema_one_of);
+	            , "JsonValue doesn't match one of the %zu subschemas", schema_amount);
 
 	return error;
 }
