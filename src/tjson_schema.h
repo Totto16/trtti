@@ -7,6 +7,10 @@
 
 #include "./tjson/variants.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct JsonSchemaObjectImpl JsonSchemaObject;
 
 typedef struct JsonSchemaArrayImpl JsonSchemaArray;
@@ -117,3 +121,7 @@ TJSON_NODISCARD JsonSchemaString* rc_json_schema_string(JsonSchemaString* json_s
 TJSON_NODISCARD JsonSchemaLiteral* rc_json_schema_literal(JsonSchemaLiteral* json_schema_literal);
 
 TJSON_NODISCARD JsonSchemaOneOf* rc_json_schema_one_of(JsonSchemaOneOf* json_schema_one_of);
+
+#ifdef __cplusplus
+}
+#endif
