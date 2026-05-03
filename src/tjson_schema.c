@@ -1437,7 +1437,7 @@ json_schema_validate_array_schema_data_impl(const JsonSchemaArray* json_schema_a
 		if(!tstr_is_null(&subschema_result)) {
 			tstr error;
 			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
-			            , "Item %zu in array is incorrect: " TSTR_FMT, i,
+			            , "Item at index %zu in array is incorrect: " TSTR_FMT, i,
 			            TSTR_FMT_ARGS(subschema_result));
 			return error;
 		}
