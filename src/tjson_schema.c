@@ -959,7 +959,10 @@ static JsonSchemaStringProperties empty_string_props_impl(void) {
 
 static void json_schema_string_destroy_impl(JsonSchemaString* const json_schema_string) {
 
-	if(json_schema_string->props.pattern != NULL) {
+	if(HAS_FLAG(json_schema_string->props.flags, JsonSchemaStringPropertiesFlagsPattern)) {
+
+		assert(json_schema_string->props.pattern != NULL);
+
 		free_json_schema_regex(json_schema_string->props.pattern);
 	}
 }
@@ -1388,7 +1391,7 @@ json_schema_validate_array_schema_data_impl(const JsonSchemaArray* json_schema_a
 
 		const size_t size = json_array_get_size(value);
 
-		if(min_items < size) {
+		if(min_items > size) {
 			tstr error;
 			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
 			            , "array length (%zu) is smaller than the min length (%zu)", size,
@@ -1405,7 +1408,7 @@ json_schema_validate_array_schema_data_impl(const JsonSchemaArray* json_schema_a
 
 		const size_t size = json_array_get_size(value);
 
-		if(max_items > size) {
+		if(max_items < size) {
 			tstr error;
 			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
 			            , "array length (%zu) is larger than the max length (%zu)", size,
@@ -1470,7 +1473,7 @@ json_schema_validate_string_schema_data_impl(const JsonSchemaString* json_schema
 
 		const size_t size = json_string_get_size(value);
 
-		if(min_length < size) {
+		if(min_length > size) {
 			tstr error;
 			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
 			            , "string size (%zu) is smaller than the min size (%zu)", size, min_length);
@@ -1486,7 +1489,7 @@ json_schema_validate_string_schema_data_impl(const JsonSchemaString* json_schema
 
 		const size_t size = json_string_get_size(value);
 
-		if(max_length > size) {
+		if(max_length < size) {
 			tstr error;
 			FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
 			            , "string size (%zu) is larger than the max size (%zu)", size, max_length);
