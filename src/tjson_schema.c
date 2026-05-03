@@ -1234,9 +1234,16 @@ json_schema_validate_object_schema_data_impl(const JsonSchemaObject* json_schema
 		TMAP_FREE(JsonObjectSchemaCheckRequiredMapImpl, &(required_map)); \
 	} while(false)
 
-	{ // check all keys if they are allowed and check teh subschema
+	{ // check all keys if they are allowed and check the subschema
 
 		JsonObjectIter* iter = json_object_get_iterator(value);
+
+#undef FREE_AT_END
+#define FREE_AT_END() \
+	do { \
+		json_object_free_iterator(iter); \
+		TMAP_FREE(JsonObjectSchemaCheckRequiredMapImpl, &(required_map)); \
+	} while(false)
 
 		while(true) {
 			const JsonObjectEntry* entry = json_object_iterator_next(iter);
@@ -1253,32 +1260,30 @@ json_schema_validate_object_schema_data_impl(const JsonSchemaObject* json_schema
 				    "ERROR: JsonObject implementation error: get at known good entry failed");
 			}
 
-			tstr key_str = json_string_get_as_str(key);
+			tstr key_str_1 = json_string_get_as_str(key);
 
-			if(tstr_is_null(&key_str)) {
+			if(tstr_is_null(&key_str_1)) {
 				FREE_AT_END();
 				return TSTR_LIT("ERROR: JsonString serialization error");
 			}
 
 			const JsonObjectEntrySchema* const schema_entry =
-			    TMAP_GET(JsonObjectEntryMapImpl, &(json_schema_object->map), key_str);
+			    TMAP_GET(JsonObjectEntryMapImpl, &(json_schema_object->map), key_str_1);
 
 			if(schema_entry == NULL) {
 
 				if(json_schema_object->allow_additional_properties) {
-					tstr_free(&key_str);
+					tstr_free(&key_str_1);
 					// this is allowed here, but we allow any value here
 					continue;
 				}
 
-				json_object_free_iterator(iter);
-
 				tstr error;
 				FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
 				            , "object can't have additional properties: but got key '" TSTR_FMT "'",
-				            TSTR_FMT_ARGS(key_str));
+				            TSTR_FMT_ARGS(key_str_1));
 
-				tstr_free(&key_str);
+				tstr_free(&key_str_1);
 
 				FREE_AT_END();
 				return error;
@@ -1289,10 +1294,24 @@ json_schema_validate_object_schema_data_impl(const JsonSchemaObject* json_schema
 			tstr subschema_result = json_schema_validate_data(&(schema_entry->schema), &sub_value);
 
 			if(!tstr_is_null(&subschema_result)) {
+
+				tstr key_str2 = json_string_get_as_str(key);
+
+				if(tstr_is_null(&key_str2)) {
+					FREE_AT_END();
+					return TSTR_LIT("ERROR: JsonString serialization error");
+				}
+
+				tstr error;
+				FORMAT_TSTR(error, OOM_ASSERT(false, "error in formatting error string");
+				            , "Value in object at key '" TSTR_FMT "' is incorrect: " TSTR_FMT,
+				            TSTR_FMT_ARGS(key_str2), TSTR_FMT_ARGS(subschema_result));
+
+				tstr_free(&key_str2);
+
 				FREE_AT_END();
 
-				// TODO: here we should add more details, that it was on an object with the key name
-				return subschema_result;
+				return error;
 			}
 
 			if(schema_entry->required) {
@@ -1312,6 +1331,12 @@ json_schema_validate_object_schema_data_impl(const JsonSchemaObject* json_schema
 
 		json_object_free_iterator(iter);
 	}
+
+#undef FREE_AT_END
+#define FREE_AT_END() \
+	do { \
+		TMAP_FREE(JsonObjectSchemaCheckRequiredMapImpl, &(required_map)); \
+	} while(false)
 
 	{ // check that all required values where found!
 
