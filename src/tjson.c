@@ -1700,7 +1700,7 @@ NODISCARD JsonParseResult json_value_parse_from_str(const tstr_view data) {
 
 NODISCARD JsonParseResult json_value_parse_from_file(const tstr* const file_path) {
 
-	const ReadFileResult file_result = read_entire_file(file_path);
+	ReadFileResult file_result = read_entire_file(file_path);
 
 	if(file_result.is_error) {
 		return new_json_parse_result_error(
@@ -1708,7 +1708,7 @@ NODISCARD JsonParseResult json_value_parse_from_file(const tstr* const file_path
 	}
 
 	assert(!file_result.is_error);
-	const tstr file = file_result.data.file;
+	tstr file = file_result.data.file;
 
 	const tstr_view str_view = tstr_as_view(&file);
 
@@ -1718,7 +1718,11 @@ NODISCARD JsonParseResult json_value_parse_from_file(const tstr* const file_path
 		                                   (JsonFileSource){ .file_path = file_path }),
 		                               .pos = (JsonSourcePosition){ .line = 0, .col = 0 } } };
 
-	return json_value_parse_from_str_impl(state);
+	const JsonParseResult result = json_value_parse_from_str_impl(state);
+
+	tstr_free(&file);
+
+	return result;
 }
 
 void free_json_string(JsonString* const json_string) {
