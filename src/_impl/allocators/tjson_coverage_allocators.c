@@ -1,6 +1,5 @@
 #include "./tjson_coverage_allocators.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 
 #include "../utils.h"
@@ -46,7 +45,7 @@ struct AllocatorFunctionHandleImpl {
 };
 
 static bool handle_should_fail_impl(AllocatorFunctionHandle* const handle) {
-	switch(handle->content.type) {
+	switch(handle->content.type) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/4
 		case AllocatorFunctionHandleTypeFailAlways: {
 			return true;
 		}
@@ -72,8 +71,8 @@ static bool handle_should_fail_impl(AllocatorFunctionHandle* const handle) {
 		case AllocatorFunctionHandleTypeFailNever: {
 			return false;
 		}
-		default: {
-			return true;
+		default: {       // GCOVR_EXCL_LINE
+			return true; // GCOVR_EXCL_LINE
 		}
 	}
 }
@@ -123,7 +122,7 @@ AllocatorFunctionHandle* tjson_coverage_allocator_get_handle(const AllocatorFunc
 
 	AllocatorFunctionHandle** to_use = NULL;
 
-	switch(type) {
+	switch(type) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/4
 		case AllocatorFunctionTypeMalloc: {
 			to_use = &malloc_handle;
 			break;
@@ -136,24 +135,24 @@ AllocatorFunctionHandle* tjson_coverage_allocator_get_handle(const AllocatorFunc
 			to_use = &realloc_handle;
 			break;
 		}
-		default: {
-			return NULL;
+		default: {       // GCOVR_EXCL_LINE
+			return NULL; // GCOVR_EXCL_LINE
 		}
 	}
 
-	if(to_use == NULL) {
-		return NULL;
+	if(to_use == NULL) { // GCOVR_EXCL_LINE
+		return NULL;     // GCOVR_EXCL_LINE
 	}
 
 	if(*to_use != NULL) {
-		fprintf(stderr, "Handle already retrieved, this handle can only be used once!\n");
+		// fprintf(stderr, "Handle already retrieved, this handle can only be used once!\n");
 		return NULL;
 	}
 
 	AllocatorFunctionHandle* allocated = malloc(sizeof(AllocatorFunctionHandle));
 
-	if(allocated == NULL) {
-		return NULL;
+	if(allocated == NULL) { // GCOVR_EXCL_LINE
+		return NULL;        // GCOVR_EXCL_LINE
 	}
 
 	*allocated =
@@ -185,7 +184,7 @@ void tjson_coverage_allocator_free_handle(AllocatorFunctionHandle* const handle)
 
 	AllocatorFunctionHandle** used = NULL;
 
-	switch(handle->type) {
+	switch(handle->type) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/4
 		case AllocatorFunctionTypeMalloc: {
 			used = &malloc_handle;
 			break;
@@ -198,8 +197,8 @@ void tjson_coverage_allocator_free_handle(AllocatorFunctionHandle* const handle)
 			used = &realloc_handle;
 			break;
 		}
-		default: {
-			return;
+		default: {  // GCOVR_EXCL_LINE
+			return; // GCOVR_EXCL_LINE
 		}
 	}
 
