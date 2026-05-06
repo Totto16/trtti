@@ -65,7 +65,7 @@ NODISCARD ReadFileResult read_entire_file(const tstr* const file_path) {
 	if(fread_result != (size_t)file_size) {
 		FREE_AT_END();
 		return new_read_file_result_error(
-		    TSTR_STATIC_LIT("Couldn't read the correct amount of bytes from file"));
+		    TSTR_STATIC_LIT("Couldn't read the correct amount of bytes from the file"));
 	}
 
 	const LibCInt fclose_result = fclose(file);
