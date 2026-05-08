@@ -53,7 +53,7 @@ NODISCARD ReadFileResult read_entire_file(const tstr* const file_path) {
 #undef FREE_AT_END
 #define FREE_AT_END() \
 	do { \
-		close(file); \
+		close(fd); \
 		TJSON_FREE(file_data); \
 	} while(false)
 
@@ -70,6 +70,8 @@ NODISCARD ReadFileResult read_entire_file(const tstr* const file_path) {
 					// try again
 					continue;
 				}
+
+				FREE_AT_END();
 				return new_read_file_result_error(TSTR_STATIC_LIT("Couldn't read from the file"));
 			}
 
