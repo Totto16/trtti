@@ -76,6 +76,12 @@ NODISCARD ReadFileResult read_entire_file(const tstr* const file_path) {
 			}
 
 			if(read_result == 0) {
+				if(remaining_size != 0) {
+					FREE_AT_END();
+					return new_read_file_result_error(
+					    TSTR_STATIC_LIT("Read to few data"));
+				}
+
 				break;
 			}
 
