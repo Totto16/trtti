@@ -927,6 +927,13 @@ TJSON_NODISCARD tstr_static json_schema_array_set_min(JsonSchemaArray* const jso
 
 	json_schema_arr->props.min_items = min;
 	json_schema_arr->props.flags |= JsonSchemaArrayPropertiesFlagsMin;
+
+	if(HAS_FLAG(json_schema_arr->props.flags, JsonSchemaArrayPropertiesFlagsMax)) {
+		if(min > json_schema_arr->props.max_items) {
+			return TSTR_STATIC_LIT("array prop error: min is larger than max!");
+		}
+	}
+
 	return tstr_static_null();
 }
 
@@ -938,6 +945,13 @@ TJSON_NODISCARD tstr_static json_schema_array_set_max(JsonSchemaArray* const jso
 
 	json_schema_arr->props.max_items = max;
 	json_schema_arr->props.flags |= JsonSchemaArrayPropertiesFlagsMax;
+
+	if(HAS_FLAG(json_schema_arr->props.flags, JsonSchemaArrayPropertiesFlagsMin)) {
+		if(max < json_schema_arr->props.min_items) {
+			return TSTR_STATIC_LIT("array prop error: max is smaller than min!");
+		}
+	}
+
 	return tstr_static_null();
 }
 
@@ -992,6 +1006,13 @@ TJSON_NODISCARD tstr_static json_schema_string_set_min(JsonSchemaString* const j
 
 	json_schema_str->props.min_length = min;
 	json_schema_str->props.flags |= JsonSchemaStringPropertiesFlagsMin;
+
+	if(HAS_FLAG(json_schema_str->props.flags, JsonSchemaStringPropertiesFlagsMax)) {
+		if(min > json_schema_str->props.max_length) {
+			return TSTR_STATIC_LIT("string prop error: min is larger than max!");
+		}
+	}
+
 	return tstr_static_null();
 }
 
@@ -1003,6 +1024,13 @@ TJSON_NODISCARD tstr_static json_schema_string_set_max(JsonSchemaString* const j
 
 	json_schema_str->props.max_length = max;
 	json_schema_str->props.flags |= JsonSchemaStringPropertiesFlagsMax;
+
+	if(HAS_FLAG(json_schema_str->props.flags, JsonSchemaStringPropertiesFlagsMin)) {
+		if(max < json_schema_str->props.min_length) {
+			return TSTR_STATIC_LIT("string prop error: max is smaller than min!");
+		}
+	}
+
 	return tstr_static_null();
 }
 
