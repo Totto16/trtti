@@ -147,6 +147,8 @@ TJSON_NODISCARD JsonParseResult json_value_parse_from_str(tstr_view data);
 
 TJSON_NODISCARD JsonParseResult json_value_parse_from_file(const tstr* file_path);
 
+void free_json_parse_result(JsonParseResult parse_result);
+
 void free_json_value(JsonValue* json_value);
 
 // serialize json values

@@ -1644,7 +1644,7 @@ json_parse_impl_parse_value(JsonParseState* const state) { // NOLINT(misc-no-rec
 	}
 }
 
-static void free_json_parse_result(JsonParseResult const parse_result) {
+void free_json_parse_result(JsonParseResult const parse_result) {
 	SWITCH_JSON_PARSE_RESULT(parse_result) {
 		CASE_JSON_PARSE_RESULT_IS_ERROR_IGN() {
 			return;
