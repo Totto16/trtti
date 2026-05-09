@@ -87,19 +87,34 @@ static_assert((sizeof(RTTITypeInfo) % 8) == 0);
 
 typedef void* RTTIAnnotatedPtr;
 
-static_assert(__builtin_classify_type(struct A1) == __builtin_classify_type(struct A2));
-static_assert(__builtin_classify_type(struct A1) != __builtin_classify_type(int));
+#if (defined(__clang__))
+	#define BUILTIN_CLASSIFY_TYPE(Type) __builtin_classify_type((Type)0)
+#else
+	#define BUILTIN_CLASSIFY_TYPE(Type) __builtin_classify_type(Type)
 
-static_assert(__builtin_classify_type(struct Foo) != __builtin_classify_type(int[5]));
+// this tests only work in GCC atm
+static_assert(BUILTIN_CLASSIFY_TYPE(RTTITypeInfo) == BUILTIN_CLASSIFY_TYPE(RTTITypeName));
+static_assert(BUILTIN_CLASSIFY_TYPE(RTTITypeInfo) != BUILTIN_CLASSIFY_TYPE(int));
 
-static_assert(__builtin_classify_type(struct Foo) != __builtin_classify_type(int[5]));
-static_assert(__builtin_classify_type(void*) == __builtin_classify_type(void*));
+static_assert(BUILTIN_CLASSIFY_TYPE(RTTITypeName) != BUILTIN_CLASSIFY_TYPE(int[5]));
+
+static_assert(BUILTIN_CLASSIFY_TYPE(RTTITypeName) != BUILTIN_CLASSIFY_TYPE(int[5]));
+static_assert(BUILTIN_CLASSIFY_TYPE(void*) == BUILTIN_CLASSIFY_TYPE(void*));
+
+#endif
 
 // TODO: does this also work with multiple objects e.g. with shared libraries or just with ones in
 // the same final object?
-#define TRTTI_SECTION \
-	__attribute__((section("._rtti_impl_trtti_lib_section"), visibility("default"), \
-	               externally_visible))
+#define TRTTI_SECTION_NAME __attribute__((section("._rtti_impl_trtti_lib_section")))
+
+#if (defined(__clang__))
+	#define TRTTI_SECTION_CUSTOM __attribute__((visibility("default")))
+#else
+	#define TRTTI_SECTION_CUSTOM __attribute__((visibility("default"), externally_visible))
+
+#endif
+
+#define TRTTI_SECTION TRTTI_SECTION_NAME TRTTI_SECTION_CUSTOM
 
 #define TRTTI_TYPE_IDENTIFIER_DEFINTION(Type) \
 	TRTTI_SECTION extern const uint8_t TRTTI_GLOBAL_ID_DATA(Type);
@@ -139,7 +154,7 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 
 #define TRTTI_DECLARE_TYPE_AS_SUPPORTED(Type) \
 	/* only support structs as RTTI types*/ \
-	static_assert(__builtin_classify_type(Type) == __builtin_classify_type(RTTITypeInfo)); \
+	static_assert(BUILTIN_CLASSIFY_TYPE(Type) == BUILTIN_CLASSIFY_TYPE(RTTITypeInfo)); \
 	/* Define value rtti type */ \
 	typedef struct { \
 		RTTITypeInfo TRTTI_STRUCT_INFO_ENTRY(Type); \
