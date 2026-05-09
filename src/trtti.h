@@ -72,6 +72,8 @@ static_assert((sizeof(RTTITypeInfo) % 8) == 0);
 #define TRTTI_STRUCT_INFO_ENTRY(T) __impl_struct_entry_rtti_##T##_info_entry_impl
 #define TRTTI_STRUCT_DATA_ENTRY(T) __impl_struct_entry_rtti_##T##_data_entry_impl
 #define TRTTI_GET_TYPEINFO(T) __impl_fn_rtti_##T##_get_typeinfo_impl
+#define TRTTI_ALLOC_NAME(T) rc_fn_##T##_alloc
+#define TRTTI_DESTROY_NAME(T) rc_fn_##T##_destroy
 
 #define TRTTI_GLOBAL_START_ID_NAME __impl_global_start_postion_for_rtti_ids_
 #define TRTTI_MATCHES_TYPE_FN __impl_fn_rtti_matches_type_generic
@@ -119,7 +121,7 @@ TRTTI_FUN_ATTRIBUTES __attribute__((noreturn)) void TRTTI_PANIC_FOR_TYPE_FN(RTTI
 TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo expected,
                                                                 RTTITypeInfo got) {
 	if(expected.id != got.id) {
-		// TODO: maybe check if the names would mathc, if they would, our id system failed
+		// TODO(Totto): maybe check if the names would match, if they would, our id system failed
 		return false;
 	}
 	return true;
@@ -137,12 +139,11 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 	TRTTI_TYPE_IDENTIFIER_DEFINTION(Type) \
 	TRTTI_TYPE_IDENTIFIER_DECLARATION(Type) \
 \
-	/* TRTTI_ID_OF_TYPE(Type)  isn't constant, as it requires final executables info alias the \
-	 * address of the variable in the static memory*/ \
-\
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTITypeInfo TRTTI_GET_TYPEINFO(Type)(void) { \
 		static RTTITypeInfo TRTTI_STATIC_TYPEINFO( \
 		    Type) = { .name = TRTTI_TYPE_NAME_LIT_CONST(#Type), .id = 0 }; \
+		/* TRTTI_ID_OF_TYPE(Type)  isn't constant, as it requires final executables info alias the \
+		 * address of the variable in the static memory,  so this can't be static :(*/ \
 		if(TRTTI_STATIC_TYPEINFO(Type).id == 0) { \
 			TRTTI_STATIC_TYPEINFO(Type).id = TRTTI_ID_OF_TYPE(Type); \
 		} \
@@ -151,7 +152,7 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 	} \
 \
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES TRTTI_VALUE_TYPENAME(Type) * \
-	    TRTTI_GET_SHADOW_DATA(Type)(RTTIAnnotatedPtr ptr) { \
+	    TRTTI_GET_SHADOW_DATA(Type)(Type * ptr) { \
 		static_assert((offsetof(TRTTI_VALUE_TYPENAME(Type), TRTTI_STRUCT_DATA_ENTRY(Type)) % 8) == \
 		              0); \
 		return (TRTTI_VALUE_TYPENAME(Type)*)(( \
@@ -173,16 +174,35 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 \
 		return TRTTI_GET_DATA(Type)(data); \
 	} \
-	TRTTI_POISON(TRTTI_VALUE_TYPENAME(Type)) \
-	TRTTI_POISON(RTTITypeInfo) \
-	TRTTI_POISON(TRTTI_GET_DATA(Type)) \
-	TRTTI_POISON(TRTTI_GET_SHADOW_DATA(Type)) \
-	TRTTI_POISON(TRTTI_STRUCT_DATA_ENTRY(Type)) \
-	TRTTI_POISON(TRTTI_STRUCT_INFO_ENTRY(Type)) \
-	TRTTI_POISON(TRTTI_STATIC_TYPEINFO(Type)) \
-	TRTTI_POISON(TRTTI_GET_TYPEINFO(Type))
+\
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_ALLOC_NAME(Type)(void) { \
+		TRTTI_VALUE_TYPENAME(Type)* result = TRTTI_MALLOC(sizeof(TRTTI_VALUE_TYPENAME(Type))); \
+		if(result == NULL) { \
+			return NULL; \
+		} \
+		result->TRTTI_STRUCT_INFO_ENTRY(Type) = TRTTI_GET_TYPEINFO(Type)(); \
+\
+		Type* data = TRTTI_GET_DATA(Type)(result); \
+		return data; \
+	} \
+	TRTTI_FUN_ATTRIBUTES void TRTTI_DESTROY_NAME(Type)(Type * value) { \
+		TRTTI_VALUE_TYPENAME(Type)* data = TRTTI_GET_SHADOW_DATA(Type)(value); \
+\
+		TRTTI_FREE(data); \
+	}
+
+TRTTI_POISON(TRTTI_VALUE_TYPENAME(Type))
+TRTTI_POISON(RTTITypeInfo)
+TRTTI_POISON(TRTTI_GET_DATA(Type))
+TRTTI_POISON(TRTTI_GET_SHADOW_DATA(Type))
+TRTTI_POISON(TRTTI_STRUCT_DATA_ENTRY(Type))
+TRTTI_POISON(TRTTI_STRUCT_INFO_ENTRY(Type))
+TRTTI_POISON(TRTTI_STATIC_TYPEINFO(Type))
+TRTTI_POISON(TRTTI_GET_TYPEINFO(Type))
 
 #define TRTTI_ANNOTATED_PTR_CAST(Type, value) TRTTI_PTR_CAST_FN(Type)(value)
+#define TRTTI_ALLOC(T) TRTTI_ALLOC_NAME(T)()
+#define TRTTI_DESTROY(T, data) TRTTI_DESTROY_NAME(T)(data)
 
 #ifdef __cplusplus
 }
