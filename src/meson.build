@@ -1,100 +1,20 @@
 src_files += files(
-    '_impl/path.c',
-    '_impl/path.h',
-    '_impl/simple_regex.c',
-    '_impl/simple_regex.h',
-    '_impl/utf8.c',
-    '_impl/utf8.h',
-    '_impl/utils.h',
-    'tjson/variants.h',
-    'tjson.c',
-    'tjson.h',
-    'tjson_schema.c',
-    'tjson_schema.h',
-    'trtti.c'
+    'trtti.h',
+    'trtti.c',
 )
+
+include_dir = get_option('prefix') / get_option('includedir')
+
 
 
 install_headers(
-    'tjson.h',
-    'tjson/variants.h',
+    files('trtti.h'),
+    install_dir: include_dir / 'trtti',
     preserve_path: true,
 )
 
-# check if we need to use our own variants for bootstrap reasons, this is implementation defined between c_variant_generator and tjson
-# nothing in here should be used by users of either of the libraries, this is just a implementation detail of both libs!
 
-tjson_fallback_to_internal_variant_dep = dependency(
-    'tjson_fallback_to_internal_variant',
-    required: false,
-)
-
-if tjson_fallback_to_internal_variant_dep.found()
-
-    if not meson.is_subproject()
-        error('only allowed, when in subproject')
-    endif
-
-    global_src_root = meson.global_source_root()
-
-    fs = import('fs')
-
-    global_project_name = fs.name(global_src_root)
-
-    if global_project_name != 'c_variant_generator'
-        error('called from another toplevel project, this is an implementation error')
-    endif
-
-    json_variants_dep = declare_dependency(
-        version: meson.project_version(),
-        compile_args: ['-D_TJSON_USE_VARIANT_IMPL=0'],
-    )
-    internal_c_args += '-DTJSON_ALLOW_BOOTSTRAP=1'
-else
-
-    c_variant_generator = find_program(
-        'c_variant_generator',
-        version: ['>=1.0.0', '<2'],
-    )
-
-    json_variants_generated_tgt = custom_target(
-        'json_variants',
-        command: [
-            c_variant_generator,
-            '-o',
-            '@OUTPUT@',
-            '-i',
-            '@INPUT@',
-        ],
-        input: [meson.project_source_root() / 'src' / 'json.variants.def.json'],
-        output: ['json_variants.h'],
-        build_subdir: 'generated' / 'json' / 'variants',
-        install: true,
-        install_dir: 'generated',
-    )
-
-    json_variants_dep = declare_dependency(
-        version: meson.project_version(),
-        sources: [json_variants_generated_tgt],
-        compile_args: ['-D_TJSON_USE_VARIANT_IMPL=1'],
-    )
-
-
-    generated_sources = alias_target(
-        'generated_sources',
-        json_variants_generated_tgt,
-    )
-
-
-endif
-
-
-cc = meson.get_compiler('c')
-
-stdc_version = cc.get_define('__STDC_VERSION__ ')
-stdc_version_int = stdc_version.replace('L', '').to_int()
-if stdc_version_int >= 202000
-    compile_flags += '-D_TJSON_COMPILE_WITH_NARROWED_ENUMS'
-endif
 
 inc_dirs += include_directories('.')
+
+
