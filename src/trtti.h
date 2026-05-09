@@ -95,13 +95,22 @@ static_assert(__builtin_classify_type(struct Foo) != __builtin_classify_type(int
 static_assert(__builtin_classify_type(struct Foo) != __builtin_classify_type(int[5]));
 static_assert(__builtin_classify_type(void*) == __builtin_classify_type(void*));
 
+//TODO: does this also work with multiple objects e.g. with shared libraries or just with ones in the same final object?
+#define TRTTI_SECTION \
+	__attribute__((section("._rtti_impl_trtti_lib_section"), visibility("default"), \
+	               externally_visible))
+
 #define TRTTI_TYPE_IDENTIFIER_DEFINTION(Type) \
-	__attribute__((section(".rtti"))) extern const uint8_t TRTTI_GLOBAL_ID_DATA(Type);
+	TRTTI_SECTION extern const uint8_t TRTTI_GLOBAL_ID_DATA(Type);
 
 #define TRTTI_TYPE_IDENTIFIER_DECLARATION(Type) \
-	__attribute__((section(".rtti"))) const uint8_t TRTTI_GLOBAL_ID_DATA(Type) = 0;
+	TRTTI_SECTION const uint8_t TRTTI_GLOBAL_ID_DATA(Type) = 0;
 
 TRTTI_TYPE_IDENTIFIER_DEFINTION(TRTTI_GLOBAL_START_ID_NAME)
+
+// defined by the custom linker script
+extern char* __impl_global_data_rtti_linker__impl__start;
+extern char* __impl_global_data_rtti_linker__impl__end;
 
 #define TRTTI_GLOBAL_ID_DATA_START TRTTI_GLOBAL_ID_DATA(TRTTI_GLOBAL_START_ID_NAME)
 
@@ -145,6 +154,11 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 		/* TRTTI_ID_OF_TYPE(Type)  isn't constant, as it requires final executables info alias the \
 		 * address of the variable in the static memory,  so this can't be static :(*/ \
 		if(TRTTI_STATIC_TYPEINFO(Type).id == 0) { \
+			fprintf(stderr, "id set: %u -> %u : %p -> %p : %s -> %s\n", \
+			        TRTTI_STATIC_TYPEINFO(Type).id, TRTTI_ID_OF_TYPE(Type), \
+			        &(TRTTI_GLOBAL_ID_DATA(Type)), &(TRTTI_GLOBAL_ID_DATA_START), \
+			        TRTTI_XSTR(TRTTI_GLOBAL_ID_DATA(Type)), \
+			        TRTTI_XSTR(TRTTI_GLOBAL_ID_DATA_START)); \
 			TRTTI_STATIC_TYPEINFO(Type).id = TRTTI_ID_OF_TYPE(Type); \
 		} \
 \
@@ -168,6 +182,11 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_PTR_CAST_FN(Type)(RTTIAnnotatedPtr ptr) { \
 		TRTTI_VALUE_TYPENAME(Type)* const data = TRTTI_GET_SHADOW_DATA(Type)(ptr); \
 		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
+		fprintf(stderr, \
+		        "rtti cast of " TRTTI_TYPE_NAME_FMT "(%u) and " TRTTI_TYPE_NAME_FMT "(%u)\n", \
+		        TRTTI_TYPE_NAME_FMT_ARGS(info.name), info.id, \
+		        TRTTI_TYPE_NAME_FMT_ARGS(data->TRTTI_STRUCT_INFO_ENTRY(Type).name), \
+		        data->TRTTI_STRUCT_INFO_ENTRY(Type).id); \
 		if(!TRTTI_MATCHES_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type))) { \
 			TRTTI_PANIC_FOR_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type)); \
 		} \
