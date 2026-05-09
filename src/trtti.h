@@ -29,7 +29,9 @@
 extern "C" {
 #endif
 
-typedef uint32_t RTTIUniqueId;
+static_assert(sizeof(void*) == sizeof(uint64_t));
+
+typedef uint64_t RTTIUniqueId;
 
 typedef struct {
 	const char* ptr;
@@ -75,7 +77,6 @@ static_assert((sizeof(RTTITypeInfo) % 8) == 0);
 #define TRTTI_ALLOC_NAME(T) rc_fn_##T##_alloc
 #define TRTTI_DESTROY_NAME(T) rc_fn_##T##_destroy
 
-#define TRTTI_GLOBAL_START_ID_NAME __impl_global_start_postion_for_rtti_ids_
 #define TRTTI_MATCHES_TYPE_FN __impl_fn_rtti_matches_type_generic
 #define TRTTI_PANIC_FOR_TYPE_FN __impl_fn_rtti_panic_for_type_generic
 
@@ -103,7 +104,6 @@ static_assert(BUILTIN_CLASSIFY_TYPE(void*) == BUILTIN_CLASSIFY_TYPE(void*));
 
 #endif
 
-// TODO: does this also work with multiple objects e.g. with shared libraries or just with ones in
 // the same final object?
 #define TRTTI_SECTION_NAME __attribute__((section("._rtti_impl_trtti_lib_section")))
 
@@ -122,22 +122,13 @@ static_assert(BUILTIN_CLASSIFY_TYPE(void*) == BUILTIN_CLASSIFY_TYPE(void*));
 #define TRTTI_TYPE_IDENTIFIER_DECLARATION(Type) \
 	TRTTI_SECTION const uint8_t TRTTI_GLOBAL_ID_DATA(Type) = 0;
 
-TRTTI_TYPE_IDENTIFIER_DEFINTION(TRTTI_GLOBAL_START_ID_NAME)
-
-// defined by the custom linker script
-extern char* __impl_global_data_rtti_linker__impl__start;
-extern char* __impl_global_data_rtti_linker__impl__end;
-
-#define TRTTI_GLOBAL_ID_DATA_START TRTTI_GLOBAL_ID_DATA(TRTTI_GLOBAL_START_ID_NAME)
-
-#define TRTTI_ID_OF_TYPE(Type) \
-	(RTTIUniqueId)(((uintptr_t)((&(TRTTI_GLOBAL_ID_DATA(Type))) - (&(TRTTI_GLOBAL_ID_DATA_START)))))
+#define TRTTI_ID_OF_TYPE(Type) (RTTIUniqueId)((uintptr_t)(&(TRTTI_GLOBAL_ID_DATA(Type))))
 
 TRTTI_FUN_ATTRIBUTES __attribute__((noreturn)) void TRTTI_PANIC_FOR_TYPE_FN(RTTITypeInfo expected,
                                                                             RTTITypeInfo got) {
 	fprintf(stderr,
 	        "[%s %s:%d]: PANIC: INVALID access of rtti type " TRTTI_TYPE_NAME_FMT
-	        "(%u): got " TRTTI_TYPE_NAME_FMT "(%u) instead\n",
+	        "(%zu): got " TRTTI_TYPE_NAME_FMT "(%zu) instead\n",
 	        __func__, __FILE__, __LINE__, TRTTI_TYPE_NAME_FMT_ARGS(got.name), got.id,
 	        TRTTI_TYPE_NAME_FMT_ARGS(expected.name), expected.id);
 	exit(EXIT_FAILURE);
