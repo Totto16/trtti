@@ -11,6 +11,7 @@ src_files += files(
     'tjson.h',
     'tjson_schema.c',
     'tjson_schema.h',
+    'trtti.c'
 )
 
 

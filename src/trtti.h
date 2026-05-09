@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 // allocators
 
@@ -64,10 +65,17 @@ static_assert((sizeof(RTTITypeInfo) % 8) == 0);
 #define TRTTI_VALUE_TYPENAME(T) __impl_struct_typename_rtti_##T
 #define TRTTI_PTR_CAST_FN(T) __impl_fn_rtti_##T##_ptr_cast
 #define TRTTI_GET_SHADOW_DATA(T) __impl_fn_rtti_##T##_get_shadow_data
-#define TRTTI_GLOBAL_ID_DATA(T) __impl_global_data_rtti_##T##_id_data
-#define TRTTI_GLOBAL_START_ID_NAME __impl_global_start_postion_for_rtti_ids_
+#define TRTTI_GLOBAL_ID_DATA_IMPL(T) __impl_global_data_rtti_##T##_id_data
+#define TRTTI_GLOBAL_ID_DATA(T) TRTTI_GLOBAL_ID_DATA_IMPL(T)
 #define TRTTI_GET_DATA(T) __impl_fn_rtti_##T##_get_data
+#define TRTTI_STATIC_TYPEINFO(T) __impl_global_data_rtti_##T##_static_typeinfo
+#define TRTTI_STRUCT_INFO_ENTRY(T) __impl_struct_entry_rtti_##T##_info_entry_impl
+#define TRTTI_STRUCT_DATA_ENTRY(T) __impl_struct_entry_rtti_##T##_data_entry_impl
+#define TRTTI_GET_TYPEINFO(T) __impl_fn_rtti_##T##_get_typeinfo_impl
+
+#define TRTTI_GLOBAL_START_ID_NAME __impl_global_start_postion_for_rtti_ids_
 #define TRTTI_MATCHES_TYPE_FN __impl_fn_rtti_matches_type_generic
+#define TRTTI_PANIC_FOR_TYPE_FN __impl_fn_rtti_panic_for_type_generic
 
 #define TRTTI_FUN_ATTRIBUTES TRTTI_MAYBE_UNUSED static inline
 
@@ -86,57 +94,95 @@ static_assert(__builtin_classify_type(struct Foo) != __builtin_classify_type(int
 static_assert(__builtin_classify_type(void*) == __builtin_classify_type(void*));
 
 #define TRTTI_TYPE_IDENTIFIER_DEFINTION(Type) \
+	__attribute__((section(".rtti"))) extern const uint8_t TRTTI_GLOBAL_ID_DATA(Type);
+
+#define TRTTI_TYPE_IDENTIFIER_DECLARATION(Type) \
 	__attribute__((section(".rtti"))) const uint8_t TRTTI_GLOBAL_ID_DATA(Type) = 0;
 
 TRTTI_TYPE_IDENTIFIER_DEFINTION(TRTTI_GLOBAL_START_ID_NAME)
 
 #define TRTTI_GLOBAL_ID_DATA_START TRTTI_GLOBAL_ID_DATA(TRTTI_GLOBAL_START_ID_NAME)
 
-#define RTTI_TYPE_ID(Type) \
+#define TRTTI_ID_OF_TYPE(Type) \
 	(RTTIUniqueId)(((uintptr_t)((&(TRTTI_GLOBAL_ID_DATA(Type))) - (&(TRTTI_GLOBAL_ID_DATA_START)))))
 
-#define TRTTI_ID_OF_TYPE(Type)
+TRTTI_FUN_ATTRIBUTES __attribute__((noreturn)) void TRTTI_PANIC_FOR_TYPE_FN(RTTITypeInfo expected,
+                                                                            RTTITypeInfo got) {
+	fprintf(stderr,
+	        "[%s %s:%d]: PANIC: INVALID access of rtti type " TRTTI_TYPE_NAME_FMT
+	        "(%u): got " TRTTI_TYPE_NAME_FMT "(%u) instead\n",
+	        __func__, __FILE__, __LINE__, TRTTI_TYPE_NAME_FMT_ARGS(got.name), got.id,
+	        TRTTI_TYPE_NAME_FMT_ARGS(expected.name), expected.id);
+	exit(EXIT_FAILURE);
+}
 
-#define TRTTI_MATCHES_TYPE(Type, info) TRTTI_MATCHES_TYPE_FN(#Type, info)
+TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo expected,
+                                                                RTTITypeInfo got) {
+	if(expected.id != got.id) {
+		// TODO: maybe check if the names would mathc, if they would, our id system failed
+		return false;
+	}
+	return true;
+}
 
 #define TRTTI_DECLARE_TYPE_AS_SUPPORTED(Type) \
 	/* only support structs as RTTI types*/ \
 	static_assert(__builtin_classify_type(Type) == __builtin_classify_type(RTTITypeInfo)); \
 	/* Define value rtti type */ \
 	typedef struct { \
-		RTTITypeInfo info; \
-		Type data; \
+		RTTITypeInfo TRTTI_STRUCT_INFO_ENTRY(Type); \
+		Type TRTTI_STRUCT_DATA_ENTRY(Type); \
 	} TRTTI_VALUE_TYPENAME(Type); \
 \
 	TRTTI_TYPE_IDENTIFIER_DEFINTION(Type) \
+	TRTTI_TYPE_IDENTIFIER_DECLARATION(Type) \
 \
-	static RTTITypeInfo TRTTI_STATIC_TYPEINFO(Type) = { .name = TRTTI_TYPE_NAME_LIT_CONST(#Type), \
-		                                                .id = TRTTI_ID_OF_TYPE(Type) }; \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES TRTTI_VALUE_TYPENAME(Type) * \
-	    TRTTI_GET_SHADOW_DATA(Type)(RTTIAnnotatedPtr ptr) { \
-		static_assert((offsetof(TRTTI_VALUE_TYPENAME(Type), value) % 8) == 0); \
-		return (TRTTI_VALUE_TYPENAME(Type)*)(( \
-		    void*)(((uint8_t*)data) - offsetof(TRTTI_VALUE_TYPENAME(Type), value))); \
+	/* TRTTI_ID_OF_TYPE(Type)  isn't constant, as it requires final executables info alias the \
+	 * address of the variable in the static memory*/ \
+\
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTITypeInfo TRTTI_GET_TYPEINFO(Type)(void) { \
+		static RTTITypeInfo TRTTI_STATIC_TYPEINFO( \
+		    Type) = { .name = TRTTI_TYPE_NAME_LIT_CONST(#Type), .id = 0 }; \
+		if(TRTTI_STATIC_TYPEINFO(Type).id == 0) { \
+			TRTTI_STATIC_TYPEINFO(Type).id = TRTTI_ID_OF_TYPE(Type); \
+		} \
+\
+		return TRTTI_STATIC_TYPEINFO(Type); \
 	} \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_GET_DATA(Type)(TRTTI_VALUE_TYPENAME(Type)*) { \
-		return &(value->data); \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES TRTTI_VALUE_TYPENAME(Type) * \
+	    TRTTI_GET_SHADOW_DATA(Type)(RTTIAnnotatedPtr ptr) { \
+		static_assert((offsetof(TRTTI_VALUE_TYPENAME(Type), TRTTI_STRUCT_DATA_ENTRY(Type)) % 8) == \
+		              0); \
+		return (TRTTI_VALUE_TYPENAME(Type)*)(( \
+		    void*)(((uint8_t*)ptr) - \
+		           offsetof(TRTTI_VALUE_TYPENAME(Type), TRTTI_STRUCT_DATA_ENTRY(Type)))); \
+	} \
+\
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_GET_DATA(Type)(TRTTI_VALUE_TYPENAME(Type) * \
+	                                                                value) { \
+		return &(value->TRTTI_STRUCT_DATA_ENTRY(Type)); \
 	} \
 \
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_PTR_CAST_FN(Type)(RTTIAnnotatedPtr ptr) { \
 		TRTTI_VALUE_TYPENAME(Type)* const data = TRTTI_GET_SHADOW_DATA(Type)(ptr); \
-		if(!TRTTI_MATCHES_TYPE(Type, data->info)) { \
-			TRTTI_PANIC_FOR_TYPE(Type, data->info); \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
+		if(!TRTTI_MATCHES_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type))) { \
+			TRTTI_PANIC_FOR_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type)); \
 		} \
 \
-		return TRTTI_GET_DATA(Type); \
-	}
+		return TRTTI_GET_DATA(Type)(data); \
+	} \
+	TRTTI_POISON(TRTTI_VALUE_TYPENAME(Type)) \
+	TRTTI_POISON(RTTITypeInfo) \
+	TRTTI_POISON(TRTTI_GET_DATA(Type)) \
+	TRTTI_POISON(TRTTI_GET_SHADOW_DATA(Type)) \
+	TRTTI_POISON(TRTTI_STRUCT_DATA_ENTRY(Type)) \
+	TRTTI_POISON(TRTTI_STRUCT_INFO_ENTRY(Type)) \
+	TRTTI_POISON(TRTTI_STATIC_TYPEINFO(Type)) \
+	TRTTI_POISON(TRTTI_GET_TYPEINFO(Type))
 
-#define TRTTI_ANNOTATED_PTR_CAST(Type, value) TRTTI_PTR_CAST_FN(T)(value)
-
-#define RTTI_TYPE(T) \
-	typedef T T; \
-	enum { T##_has_rtti = 1 }
+#define TRTTI_ANNOTATED_PTR_CAST(Type, value) TRTTI_PTR_CAST_FN(Type)(value)
 
 #ifdef __cplusplus
 }
