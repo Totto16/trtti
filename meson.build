@@ -20,11 +20,17 @@ inc_dirs = []
 
 subdir('src')
 
+link_depends = []
+link_args = []
 
 c = meson.get_compiler('c')
 
 if c.get_linker_id() in ['ld.bfd', 'ld.lld']
     trtti_linker_script = meson.project_source_root() / 'src' / 'trtti.ld'
+
+    link_depends += trtti_linker_script
+    link_args += ['-T', trtti_linker_script]
+
 elif c.get_linker_id() in ['ld.mold']
     error('linker ' + c.get_linker_id() + ' not supported: mold doesn\'t support linker scripts')
 else
