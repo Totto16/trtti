@@ -31,7 +31,7 @@ NODISCARD Utf8DataResult get_utf8_string(const tstr_view str_view) {
 
 	if(result != (utf8proc_ssize_t)str_view.len) {
 		// truncate the buffer
-		void* const new_buffer = // NOLINT(totto-const-correctness-c)
+		Utf8Codepoint* const new_buffer = // NOLINT(totto-const-correctness-c)
 		    TJSON_REALLOC(buffer, sizeof(utf8proc_int32_t) * (size_t)result);
 
 		if(!new_buffer) {

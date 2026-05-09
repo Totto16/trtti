@@ -1321,10 +1321,8 @@ NODISCARD static Utf8NextCharResult utf8_get_next_char_and_consume(JsonParseStat
 	}
 
 	utf8proc_int32_t codepoint = 0;
-	const utf8proc_ssize_t result = utf8proc_iterate(
-	    (const utf8proc_uint8_t*)((const void*) // NOLINT(bugprone-casting-through-void)
-	                              state->view.data),
-	    (long)(state->view.len), &codepoint);
+	const utf8proc_ssize_t result = utf8proc_iterate((const utf8proc_uint8_t*)state->view.data,
+	                                                 (long)(state->view.len), &codepoint);
 
 	if(result < 0) {
 		return new_utf8_next_char_result_error(
@@ -1645,18 +1643,18 @@ json_parse_impl_parse_value(JsonParseState* const state) { // NOLINT(misc-no-rec
 }
 
 void free_json_parse_result(JsonParseResult const parse_result) {
-	SWITCH_JSON_PARSE_RESULT(parse_result) {
+	SWITCH_JSON_PARSE_RESULT(parse_result) { // GCOVR_EXCL_BR_WITHOUT_HIT: 1/3
 		CASE_JSON_PARSE_RESULT_IS_ERROR_IGN() {
 			return;
 		}
 		VARIANT_CASE_END();
-		CASE_JSON_PARSE_RESULT_IS_OK_MUT(parse_result) {
+		CASE_JSON_PARSE_RESULT_IS_OK_MUT(parse_result) { // GCOVR_EXCL_BR_WITHOUT_HIT: 2/4
 			free_json_value(&ok);
 			return;
 		}
-		VARIANT_CASE_END();
-		default: {
-			break;
+		VARIANT_CASE_END(); // GCOVR_EXCL_LINE
+		default: {          // GCOVR_EXCL_LINE
+			break;          // GCOVR_EXCL_LINE
 		}
 	}
 }
@@ -1707,7 +1705,7 @@ NODISCARD JsonParseResult json_value_parse_from_file(const tstr* const file_path
 		    make_json_error_at(json_source_location_get_null(), file_result.data.error));
 	}
 
-	assert(!file_result.is_error);
+	assert(!file_result.is_error); // GCOVR_EXCL_BR_WITHOUT_HIT: 1/2
 	tstr file = file_result.data.file;
 
 	const tstr_view str_view = tstr_as_view(&file);
@@ -1742,7 +1740,7 @@ void free_json_array(JsonArray* const json_arr) { // NOLINT(misc-no-recursion)
 }
 
 void free_json_value(JsonValue* const json_value) { // NOLINT(misc-no-recursion)
-	SWITCH_JSON_VALUE(*json_value) {
+	SWITCH_JSON_VALUE(*json_value) {                // GCOVR_EXCL_BR_WITHOUT_HIT: 1/7
 		CASE_JSON_VALUE_IS_OBJECT_CONST(*json_value) {
 			free_json_object(object.obj);
 		}
@@ -1768,7 +1766,7 @@ void free_json_value(JsonValue* const json_value) { // NOLINT(misc-no-recursion)
 		break;
 		VARIANT_CASE_END();
 		default: {
-			break;
+			break; // GCOVR_EXCL_LINE
 		}
 	}
 
@@ -1810,11 +1808,12 @@ static void json_to_string_number_impl(StringBuilder* const string_builder,
 	if(fracpart == 0.0) {
 #pragma GCC diagnostic pop
 
-		STRING_BUILDER_APPENDF(string_builder, OOM_ASSERT(false, "error in formatting json number");
-		                       , "%.0f", intpart);
+		STRING_BUILDER_APPENDF( // GCOVR_EXCL_BR_WITHOUT_HIT: 6/12
+		    string_builder, OOM_ASSERT(false, "error in formatting json number");, "%.0f", intpart);
 	} else {
-		STRING_BUILDER_APPENDF(string_builder, OOM_ASSERT(false, "error in formatting json number");
-		                       , "%g", json_number.value);
+		STRING_BUILDER_APPENDF( // GCOVR_EXCL_BR_WITHOUT_HIT: 6/12
+		    string_builder, OOM_ASSERT(false, "error in formatting json number");
+		    , "%g", json_number.value);
 	}
 }
 
@@ -1918,10 +1917,7 @@ NODISCARD static int8_t json_impl_escape_char_into(const Utf8Codepoint codepoint
 				return -1;
 			}
 
-			dst[2] = (uint8_t)hex_buf[0];
-			dst[3] = (uint8_t)hex_buf[1];
-			dst[4] = (uint8_t)hex_buf[2];
-			dst[5] = (uint8_t)hex_buf[3]; // NOLINT(readability-magic-numbers)
+			memcpy(dst + 2, hex_buf, 4);
 
 			return 6; // NOLINT(readability-magic-numbers)
 		}
