@@ -20,7 +20,16 @@ inc_dirs = []
 
 subdir('src')
 
-trtti_linker_script = meson.project_source_root() / 'src' / 'trtti.ld'
+
+c = meson.get_compiler('c')
+
+if c.get_linker_id() in ['ld.bfd', 'ld.lld']
+    trtti_linker_script = meson.project_source_root() / 'src' / 'trtti.ld'
+elif c.get_linker_id() in ['ld.mold']
+    error('linker ' + c.get_linker_id() + ' not supported: mold doesn\'t support linker scripts')
+else
+    error('linker ' + c.get_linker_id() + ' currently not supported')
+endif
 
 trtti_lib = library(
     'trtti',
