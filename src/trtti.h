@@ -66,6 +66,8 @@ static_assert((sizeof(RTTITypeInfo) % 8) == 0);
 
 #define TRTTI_VALUE_TYPENAME(T) __impl_struct_typename_rtti_##T
 #define TRTTI_PTR_CAST_FN(T) __impl_fn_rtti_##T##_ptr_cast
+#define TRTTI_VALUE_CAST_FN(T) __impl_fn_rtti_##T##_value_cast
+#define TRTTI_VALUE_GET_FN(T) __impl_fn_rtti_##T##_value_get
 #define TRTTI_GET_SHADOW_DATA(T) __impl_fn_rtti_##T##_get_shadow_data
 #define TRTTI_GLOBAL_ID_DATA_IMPL(T) __impl_global_data_rtti_##T##_id_data
 #define TRTTI_GLOBAL_ID_DATA(T) TRTTI_GLOBAL_ID_DATA_IMPL(T)
@@ -87,6 +89,11 @@ static_assert((sizeof(RTTITypeInfo) % 8) == 0);
 #define TRTTI_POISON(x) _Pragma(TRTTI_XSTR(GCC poison x))
 
 typedef void* RTTIAnnotatedPtr;
+
+typedef struct {
+	RTTITypeInfo type;
+	RTTIAnnotatedPtr ptr;
+} RTTIAnnotatedValue;
 
 #if (defined(__clang__))
 	#define BUILTIN_CLASSIFY_TYPE(Type) __builtin_classify_type((Type*)0)
@@ -191,6 +198,22 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 		return TRTTI_GET_DATA(Type)(data); \
 	} \
 \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_VALUE_CAST_FN(Type)( \
+	    RTTIAnnotatedValue value) { \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
+		if(!TRTTI_MATCHES_TYPE_FN(info, value.type)) { \
+			TRTTI_PANIC_FOR_TYPE_FN(info, value.type); \
+		} \
+\
+		return (Type*)(value.ptr); \
+	} \
+\
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTIAnnotatedValue TRTTI_VALUE_GET_FN(Type)(Type * ptr) { \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
+\
+		return (RTTIAnnotatedValue){ .type = info, .ptr = (void*)ptr }; \
+	} \
+\
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_ALLOC_NAME(Type)(void) { \
 		TRTTI_VALUE_TYPENAME(Type)* result = TRTTI_MALLOC(sizeof(TRTTI_VALUE_TYPENAME(Type))); \
 		if(result == NULL) { \
@@ -217,8 +240,10 @@ TRTTI_POISON(TRTTI_STATIC_TYPEINFO(Type))
 TRTTI_POISON(TRTTI_GET_TYPEINFO(Type))
 
 #define TRTTI_ANNOTATED_PTR_CAST(Type, value) TRTTI_PTR_CAST_FN(Type)(value)
-#define TRTTI_ALLOC(T) TRTTI_ALLOC_NAME(T)()
-#define TRTTI_DESTROY(T, data) TRTTI_DESTROY_NAME(T)(data)
+#define TRTTI_ALLOC(Type) TRTTI_ALLOC_NAME(Type)()
+#define TRTTI_DESTROY(Type, data) TRTTI_DESTROY_NAME(Type)(data)
+#define TRTTI_ANNOTATED_VALUE_CAST(Type, value) TRTTI_VALUE_CAST_FN(Type)(value)
+#define TRTTI_ANNOTATED_VALUE_GET(Type, value) TRTTI_VALUE_GET_FN(Type)(value)
 
 #ifdef __cplusplus
 }
