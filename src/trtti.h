@@ -89,7 +89,7 @@ static_assert((sizeof(RTTITypeInfo) % 8) == 0);
 typedef void* RTTIAnnotatedPtr;
 
 #if (defined(__clang__))
-	#define BUILTIN_CLASSIFY_TYPE(Type) __builtin_classify_type((Type)0)
+	#define BUILTIN_CLASSIFY_TYPE(Type) __builtin_classify_type((Type*)0)
 #else
 	#define BUILTIN_CLASSIFY_TYPE(Type) __builtin_classify_type(Type)
 
