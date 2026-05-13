@@ -38,20 +38,46 @@ typedef struct {
 	size_t len;
 } RTTITypeName;
 
-#define TRTTI_REQUIRE_STRING_LITERAL(str) \
-	(0 * \
-	 sizeof( \
-	     char[1][__builtin_types_compatible_p(__typeof__(str), __typeof__(&(str)[0])) ? -1 : 1]))
+#ifdef __cplusplus
 
-#define TRTTI_SIZE_OF_STR_LIT(str) ((sizeof(str) - 1) + (TRTTI_REQUIRE_STRING_LITERAL(str)))
+// close extern "C"
+}
 
-// Macro for compile-time string literals (avoids runtime strlen).
-#define TRTTI_TYPE_NAME_LIT(str) ((RTTITypeName){ .ptr = (str), .len = TRTTI_SIZE_OF_STR_LIT(str) })
+[[nodiscard]] static consteval RTTITypeName operator""_trtti_lit(const char* str, std::size_t len) {
+	const RTTITypeName result = { .ptr = str, .len = len };
+	return result;
+}
 
-#if defined(__GNUC__) && (!(defined(__clang__)))
-	#define TRTTI_TYPE_NAME_LIT_CONST(str) { .ptr = (str), .len = TRTTI_SIZE_OF_STR_LIT(str) }
-#else
+// new extern "C"
+extern "C" {
+
+	#define TRTTI_TYPE_NAME_LIT(str) str##_trtti_lit
 	#define TRTTI_TYPE_NAME_LIT_CONST(str) TRTTI_TYPE_NAME_LIT(str)
+
+	#define TRTTI_LITERAL_IMPL(Type) Type
+
+#else
+
+	#define TRTTI_REQUIRE_STRING_LITERAL(str) \
+		(0 * \
+		 sizeof( \
+		     char[1] \
+		         [__builtin_types_compatible_p(__typeof__(str), __typeof__(&(str)[0])) ? -1 : 1]))
+
+	#define TRTTI_SIZE_OF_STR_LIT(str) ((sizeof(str) - 1) + (TRTTI_REQUIRE_STRING_LITERAL(str)))
+
+    // Macro for compile-time string literals (avoids runtime strlen).
+	#define TRTTI_TYPE_NAME_LIT(str) \
+		((RTTITypeName){ .ptr = (str), .len = TRTTI_SIZE_OF_STR_LIT(str) })
+
+	#if defined(__GNUC__) && (!(defined(__clang__)))
+		#define TRTTI_TYPE_NAME_LIT_CONST(str) { .ptr = (str), .len = TRTTI_SIZE_OF_STR_LIT(str) }
+	#else
+		#define TRTTI_TYPE_NAME_LIT_CONST(str) TRTTI_TYPE_NAME_LIT(str)
+	#endif
+
+	#define TRTTI_LITERAL_IMPL(Type) (Type)
+
 #endif
 
 #define TRTTI_TYPE_NAME_FMT "%.*s"
@@ -192,7 +218,7 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 	} \
 \
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_PTR_CAST_FN(Type)(RTTIAnnotatedPtr ptr) { \
-		TRTTI_VALUE_TYPENAME(Type)* const data = TRTTI_GET_SHADOW_DATA(Type)(ptr); \
+		TRTTI_VALUE_TYPENAME(Type)* const data = TRTTI_GET_SHADOW_DATA(Type)((Type*)ptr); \
 		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
 		if(!TRTTI_MATCHES_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type))) { \
 			TRTTI_PANIC_FOR_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type)); \
@@ -214,11 +240,12 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTIAnnotatedValue TRTTI_VALUE_GET_FN(Type)(Type * ptr) { \
 		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
 \
-		return (RTTIAnnotatedValue){ .type = info, .ptr = (void*)ptr }; \
+		return TRTTI_LITERAL_IMPL(RTTIAnnotatedValue){ .type = info, .ptr = (void*)ptr }; \
 	} \
 \
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_ALLOC_NAME(Type)(void) { \
-		TRTTI_VALUE_TYPENAME(Type)* result = TRTTI_MALLOC(sizeof(TRTTI_VALUE_TYPENAME(Type))); \
+		TRTTI_VALUE_TYPENAME(Type)* result = \
+		    (TRTTI_VALUE_TYPENAME(Type)*)TRTTI_MALLOC(sizeof(TRTTI_VALUE_TYPENAME(Type))); \
 		if(result == NULL) { \
 			return NULL; \
 		} \
