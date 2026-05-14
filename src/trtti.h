@@ -153,11 +153,11 @@ static_assert(BUILTIN_CLASSIFY_TYPE(void*) == BUILTIN_CLASSIFY_TYPE(void*));
 
 #define TRTTI_SECTION TRTTI_SECTION_NAME TRTTI_SECTION_CUSTOM
 
-#define TRTTI_TYPE_IDENTIFIER_DEFINTION(Type) \
-	TRTTI_SECTION extern const uint8_t TRTTI_GLOBAL_ID_DATA(Type);
+#define TRTTI_TYPE_IDENTIFIER_DEFINTION(Typename) \
+	TRTTI_SECTION extern const uint8_t TRTTI_GLOBAL_ID_DATA(Typename);
 
-#define TRTTI_TYPE_IDENTIFIER_DECLARATION(Type) \
-	TRTTI_SECTION const uint8_t TRTTI_GLOBAL_ID_DATA(Type) = 0;
+#define TRTTI_TYPE_IDENTIFIER_DECLARATION(Typename) \
+	TRTTI_SECTION const uint8_t TRTTI_GLOBAL_ID_DATA(Typename) = 0;
 
 #define TRTTI_ID_OF_TYPE(Type) (RTTIUniqueId)((uintptr_t)(&(TRTTI_GLOBAL_ID_DATA(Type))))
 
@@ -180,68 +180,69 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 	return true;
 }
 
-#define TRTTI_DECLARE_TYPE_AS_SUPPORTED(Type) \
-	/* only support structs as RTTI types*/ \
-	static_assert(BUILTIN_CLASSIFY_TYPE(Type) == BUILTIN_CLASSIFY_TYPE(RTTITypeInfo)); \
+#define TRTTI_DECLARE_TYPE_AS_SUPPORTED_EXTENDED(Type, Typename) \
+	/* only support structs or ptrs as RTTI types*/ \
+	static_assert(BUILTIN_CLASSIFY_TYPE(Type) == BUILTIN_CLASSIFY_TYPE(RTTITypeInfo) || BUILTIN_CLASSIFY_TYPE(Type) == BUILTIN_CLASSIFY_TYPE(void*)); \
 	/* Define value rtti type */ \
 	typedef struct { \
-		RTTITypeInfo TRTTI_STRUCT_INFO_ENTRY(Type); \
-		Type TRTTI_STRUCT_DATA_ENTRY(Type); \
-	} TRTTI_VALUE_TYPENAME(Type); \
+		RTTITypeInfo TRTTI_STRUCT_INFO_ENTRY(Typename); \
+		Type TRTTI_STRUCT_DATA_ENTRY(Typename); \
+	} TRTTI_VALUE_TYPENAME(Typename); \
 \
-	static_assert((sizeof(TRTTI_VALUE_TYPENAME(Type)) % 8) == 0); \
+	static_assert((sizeof(TRTTI_VALUE_TYPENAME(Typename)) % 8) == 0); \
 \
-	TRTTI_TYPE_IDENTIFIER_DEFINTION(Type) \
+	TRTTI_TYPE_IDENTIFIER_DEFINTION(Typename) \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTITypeInfo TRTTI_GET_TYPEINFO(Type)(void) { \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTITypeInfo TRTTI_GET_TYPEINFO(Typename)(void) { \
 		static RTTITypeInfo TRTTI_STATIC_TYPEINFO( \
-		    Type) = { .name = TRTTI_TYPE_NAME_LIT_CONST(#Type), .id = 0 }; \
+		    Typename) = { .name = TRTTI_TYPE_NAME_LIT_CONST(#Type), .id = 0 }; \
 		/* TRTTI_ID_OF_TYPE(Type)  isn't constant, as it requires final executables info alias the \
 		 * address of the variable in the static memory,  so this can't be static :(*/ \
-		if(TRTTI_STATIC_TYPEINFO(Type).id == 0) { \
-			TRTTI_STATIC_TYPEINFO(Type).id = TRTTI_ID_OF_TYPE(Type); \
+		if(TRTTI_STATIC_TYPEINFO(Typename).id == 0) { \
+			TRTTI_STATIC_TYPEINFO(Typename).id = TRTTI_ID_OF_TYPE(Typename); \
 		} \
 \
-		return TRTTI_STATIC_TYPEINFO(Type); \
+		return TRTTI_STATIC_TYPEINFO(Typename); \
 	} \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES TRTTI_VALUE_TYPENAME(Type) * \
-	    TRTTI_GET_SHADOW_DATA(Type)(Type * ptr) { \
-		static_assert((offsetof(TRTTI_VALUE_TYPENAME(Type), TRTTI_STRUCT_DATA_ENTRY(Type)) % 8) == \
-		              0); \
-		return (TRTTI_VALUE_TYPENAME(Type)*)(( \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES TRTTI_VALUE_TYPENAME(Typename) * \
+	    TRTTI_GET_SHADOW_DATA(Typename)(Type* const ptr) { \
+		static_assert( \
+		    (offsetof(TRTTI_VALUE_TYPENAME(Typename), TRTTI_STRUCT_DATA_ENTRY(Typename)) % 8) == \
+		    0); \
+		return (TRTTI_VALUE_TYPENAME(Typename)*)(( \
 		    void*)(((uint8_t*)ptr) - \
-		           offsetof(TRTTI_VALUE_TYPENAME(Type), TRTTI_STRUCT_DATA_ENTRY(Type)))); \
+		           offsetof(TRTTI_VALUE_TYPENAME(Typename), TRTTI_STRUCT_DATA_ENTRY(Typename)))); \
 	} \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_GET_DATA(Type)(TRTTI_VALUE_TYPENAME(Type) * \
-	                                                                value) { \
-		return &(value->TRTTI_STRUCT_DATA_ENTRY(Type)); \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_GET_DATA(Typename)( \
+	    TRTTI_VALUE_TYPENAME(Typename)* const value) { \
+		return &(value->TRTTI_STRUCT_DATA_ENTRY(Typename)); \
 	} \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_PTR_CAST_FN(Type)(RTTIAnnotatedPtr ptr) { \
-		TRTTI_VALUE_TYPENAME(Type)* const data = TRTTI_GET_SHADOW_DATA(Type)((Type*)ptr); \
-		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
-		if(!TRTTI_MATCHES_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type))) { \
-			TRTTI_PANIC_FOR_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type)); \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_PTR_CAST_FN(Typename)(RTTIAnnotatedPtr ptr) { \
+		TRTTI_VALUE_TYPENAME(Typename)* const data = TRTTI_GET_SHADOW_DATA(Typename)((Type*)ptr); \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Typename)(); \
+		if(!TRTTI_MATCHES_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Typename))) { \
+			TRTTI_PANIC_FOR_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Typename)); \
 		} \
 \
-		return TRTTI_GET_DATA(Type)(data); \
+		return TRTTI_GET_DATA(Typename)(data); \
 	} \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_PTR_IS_FN(Type)(RTTIAnnotatedPtr ptr) { \
-		TRTTI_VALUE_TYPENAME(Type)* const data = TRTTI_GET_SHADOW_DATA(Type)((Type*)ptr); \
-		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
-		if(TRTTI_MATCHES_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type))) { \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_PTR_IS_FN(Typename)(RTTIAnnotatedPtr ptr) { \
+		TRTTI_VALUE_TYPENAME(Typename)* const data = TRTTI_GET_SHADOW_DATA(Typename)((Type*)ptr); \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Typename)(); \
+		if(TRTTI_MATCHES_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Typename))) { \
 			return true; \
 		} \
 \
 		return false; \
 	} \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_VALUE_CAST_FN(Type)( \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_VALUE_CAST_FN(Typename)( \
 	    RTTIAnnotatedValue value) { \
-		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Typename)(); \
 		if(!TRTTI_MATCHES_TYPE_FN(info, value.type)) { \
 			TRTTI_PANIC_FOR_TYPE_FN(info, value.type); \
 		} \
@@ -249,8 +250,9 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 		return (Type*)(value.ptr); \
 	} \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_VALUE_IS_FN(Type)(RTTIAnnotatedValue value) { \
-		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_VALUE_IS_FN(Typename)( \
+	    RTTIAnnotatedValue value) { \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Typename)(); \
 		if(TRTTI_MATCHES_TYPE_FN(info, value.type)) { \
 			return true; \
 		} \
@@ -258,43 +260,51 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 		return false; \
 	} \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTIAnnotatedValue TRTTI_VALUE_GET_FN(Type)(Type * ptr) { \
-		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTIAnnotatedValue TRTTI_VALUE_GET_FN(Typename)( \
+	    Type* const ptr) { \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Typename)(); \
 \
 		return TRTTI_LITERAL_IMPL(RTTIAnnotatedValue){ .type = info, .ptr = (void*)ptr }; \
 	} \
 \
-	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_ALLOC_NAME(Type)(void) { \
-		TRTTI_VALUE_TYPENAME(Type)* result = \
-		    (TRTTI_VALUE_TYPENAME(Type)*)TRTTI_MALLOC(sizeof(TRTTI_VALUE_TYPENAME(Type))); \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_ALLOC_NAME(Typename)(void) { \
+		TRTTI_VALUE_TYPENAME(Typename)* result = \
+		    (TRTTI_VALUE_TYPENAME(Typename)*)TRTTI_MALLOC(sizeof(TRTTI_VALUE_TYPENAME(Typename))); \
 		if(result == NULL) { \
 			return NULL; \
 		} \
-		result->TRTTI_STRUCT_INFO_ENTRY(Type) = TRTTI_GET_TYPEINFO(Type)(); \
+		result->TRTTI_STRUCT_INFO_ENTRY(Typename) = TRTTI_GET_TYPEINFO(Typename)(); \
 \
-		Type* data = TRTTI_GET_DATA(Type)(result); \
+		Type* data = TRTTI_GET_DATA(Typename)(result); \
 		return data; \
 	} \
-	TRTTI_FUN_ATTRIBUTES void TRTTI_DESTROY_NAME(Type)(Type * value) { \
-		TRTTI_VALUE_TYPENAME(Type)* data = TRTTI_GET_SHADOW_DATA(Type)(value); \
+	TRTTI_FUN_ATTRIBUTES void TRTTI_DESTROY_NAME(Typename)(Type * const value) { \
+		TRTTI_VALUE_TYPENAME(Typename)* data = TRTTI_GET_SHADOW_DATA(Typename)(value); \
 \
 		TRTTI_FREE(data); \
 	} \
 \
-	TRTTI_POISON(TRTTI_VALUE_TYPENAME(Type)) \
+	TRTTI_POISON(TRTTI_VALUE_TYPENAME(Typename)) \
 	TRTTI_POISON(RTTITypeInfo) \
-	TRTTI_POISON(TRTTI_GET_DATA(Type)) \
-	TRTTI_POISON(TRTTI_GET_SHADOW_DATA(Type)) \
-	TRTTI_POISON(TRTTI_STRUCT_DATA_ENTRY(Type)) \
-	TRTTI_POISON(TRTTI_STRUCT_INFO_ENTRY(Type)) \
-	TRTTI_POISON(TRTTI_STATIC_TYPEINFO(Type)) \
-	TRTTI_POISON(TRTTI_GET_TYPEINFO(Type))
+	TRTTI_POISON(TRTTI_GET_DATA(Typename)) \
+	TRTTI_POISON(TRTTI_GET_SHADOW_DATA(Typename)) \
+	TRTTI_POISON(TRTTI_STRUCT_DATA_ENTRY(Typename)) \
+	TRTTI_POISON(TRTTI_STRUCT_INFO_ENTRY(Typename)) \
+	TRTTI_POISON(TRTTI_STATIC_TYPEINFO(Typename)) \
+	TRTTI_POISON(TRTTI_GET_TYPEINFO(Typename))
 
-#define TRTTI_IMPLEMENTATION_FOR_TYPE(Type) TRTTI_TYPE_IDENTIFIER_DECLARATION(Type)
+#define TRTTI_IMPLEMENTATION_FOR_TYPE_EXTENDED(Type, Typename) \
+	TRTTI_TYPE_IDENTIFIER_DECLARATION(Typename)
 
-#define TRTTI_DEFINE_TYPE_AS_SUPPORTED(Type) \
-	TRTTI_DECLARE_TYPE_AS_SUPPORTED(Type) \
-	TRTTI_IMPLEMENTATION_FOR_TYPE(Type)
+#define TRTTI_DEFINE_TYPE_AS_SUPPORTED_EXTENDED(Type, Typename) \
+	TRTTI_DECLARE_TYPE_AS_SUPPORTED_EXTENDED(Type, Typename) \
+	TRTTI_IMPLEMENTATION_FOR_TYPE_EXTENDED(Type, Typename)
+
+#define TRTTI_DECLARE_TYPE_AS_SUPPORTED(Type) TRTTI_DECLARE_TYPE_AS_SUPPORTED_EXTENDED(Type, Type)
+
+#define TRTTI_IMPLEMENTATION_FOR_TYPE(Type) TRTTI_IMPLEMENTATION_FOR_TYPE_EXTENDED(Type, Type)
+
+#define TRTTI_DEFINE_TYPE_AS_SUPPORTED(Type) TRTTI_DEFINE_TYPE_AS_SUPPORTED_EXTENDED(Type, Type)
 
 #define TRTTI_ANNOTATED_PTR_CAST(Type, value) TRTTI_PTR_CAST_FN(Type)(value)
 #define TRTTI_ANNOTATED_PTR_IS(Type, value) TRTTI_PTR_IS_FN(Type)(value)
