@@ -92,8 +92,10 @@ static_assert((sizeof(RTTITypeInfo) % 8) == 0);
 
 #define TRTTI_VALUE_TYPENAME(T) __impl_struct_typename_rtti_##T
 #define TRTTI_PTR_CAST_FN(T) __impl_fn_rtti_##T##_ptr_cast
-#define TRTTI_VALUE_CAST_FN(T) __impl_fn_rtti_##T##_value_cast
+#define TRTTI_PTR_IS_FN(T) __impl_fn_rtti_##T##_ptr_is
 #define TRTTI_VALUE_GET_FN(T) __impl_fn_rtti_##T##_value_get
+#define TRTTI_VALUE_CAST_FN(T) __impl_fn_rtti_##T##_value_cast
+#define TRTTI_VALUE_IS_FN(T) __impl_fn_rtti_##T##_value_is
 #define TRTTI_GET_SHADOW_DATA(T) __impl_fn_rtti_##T##_get_shadow_data
 #define TRTTI_GLOBAL_ID_DATA_IMPL(T) __impl_global_data_rtti_##T##_id_data
 #define TRTTI_GLOBAL_ID_DATA(T) TRTTI_GLOBAL_ID_DATA_IMPL(T)
@@ -227,6 +229,16 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 		return TRTTI_GET_DATA(Type)(data); \
 	} \
 \
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_PTR_IS_FN(Type)(RTTIAnnotatedPtr ptr) { \
+		TRTTI_VALUE_TYPENAME(Type)* const data = TRTTI_GET_SHADOW_DATA(Type)((Type*)ptr); \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
+		if(TRTTI_MATCHES_TYPE_FN(info, data->TRTTI_STRUCT_INFO_ENTRY(Type))) { \
+			return true; \
+		} \
+\
+		return false; \
+	} \
+\
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES Type* TRTTI_VALUE_CAST_FN(Type)( \
 	    RTTIAnnotatedValue value) { \
 		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
@@ -235,6 +247,15 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 		} \
 \
 		return (Type*)(value.ptr); \
+	} \
+\
+	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_VALUE_IS_FN(Type)(RTTIAnnotatedValue value) { \
+		const RTTITypeInfo info = TRTTI_GET_TYPEINFO(Type)(); \
+		if(TRTTI_MATCHES_TYPE_FN(info, value.type)) { \
+			return true; \
+		} \
+\
+		return false; \
 	} \
 \
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTIAnnotatedValue TRTTI_VALUE_GET_FN(Type)(Type * ptr) { \
@@ -276,10 +297,16 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 	TRTTI_IMPLEMENTATION_FOR_TYPE(Type)
 
 #define TRTTI_ANNOTATED_PTR_CAST(Type, value) TRTTI_PTR_CAST_FN(Type)(value)
+#define TRTTI_ANNOTATED_PTR_IS(Type, value) TRTTI_PTR_IS_FN(Type)(value)
+
 #define TRTTI_ALLOC(Type) TRTTI_ALLOC_NAME(Type)()
 #define TRTTI_DESTROY(Type, data) TRTTI_DESTROY_NAME(Type)(data)
-#define TRTTI_ANNOTATED_VALUE_CAST(Type, value) TRTTI_VALUE_CAST_FN(Type)(value)
+
 #define TRTTI_ANNOTATED_VALUE_GET(Type, value) TRTTI_VALUE_GET_FN(Type)(value)
+#define TRTTI_ANNOTATED_VALUE_CAST(Type, value) TRTTI_VALUE_CAST_FN(Type)(value)
+#define TRTTI_ANNOTATED_VALUE_IS(Type, value) TRTTI_VALUE_IS_FN(Type)(value)
+
+#define TRTTI_TYPE_MATCHES_OTHER_TYPE(type1, type2) TRTTI_MATCHES_TYPE_FN(type1, type2)
 
 #ifdef __cplusplus
 }
