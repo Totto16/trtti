@@ -181,8 +181,6 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 }
 
 #define TRTTI_DECLARE_TYPE_AS_SUPPORTED_EXTENDED(Type, Typename) \
-	/* only support structs or ptrs as RTTI types*/ \
-	static_assert(BUILTIN_CLASSIFY_TYPE(Type) == BUILTIN_CLASSIFY_TYPE(RTTITypeInfo) || BUILTIN_CLASSIFY_TYPE(Type) == BUILTIN_CLASSIFY_TYPE(void*)); \
 	/* Define value rtti type */ \
 	typedef struct { \
 		RTTITypeInfo TRTTI_STRUCT_INFO_ENTRY(Typename); \
@@ -278,7 +276,7 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 		Type* data = TRTTI_GET_DATA(Typename)(result); \
 		return data; \
 	} \
-	TRTTI_FUN_ATTRIBUTES void TRTTI_DESTROY_NAME(Typename)(Type * const value) { \
+	TRTTI_FUN_ATTRIBUTES void TRTTI_DESTROY_NAME(Typename)(Type* const value) { \
 		TRTTI_VALUE_TYPENAME(Typename)* data = TRTTI_GET_SHADOW_DATA(Typename)(value); \
 \
 		TRTTI_FREE(data); \
