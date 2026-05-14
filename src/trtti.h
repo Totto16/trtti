@@ -94,6 +94,7 @@ static_assert((sizeof(RTTITypeInfo) % 8) == 0);
 #define TRTTI_PTR_CAST_FN(T) __impl_fn_rtti_##T##_ptr_cast
 #define TRTTI_PTR_IS_FN(T) __impl_fn_rtti_##T##_ptr_is
 #define TRTTI_VALUE_GET_FN(T) __impl_fn_rtti_##T##_value_get
+#define TRTTI_VALUE_GET_EMPTY_FN __impl_fn_rtti_generic__impl_value_get_empty
 #define TRTTI_VALUE_CAST_FN(T) __impl_fn_rtti_##T##_value_cast
 #define TRTTI_VALUE_IS_FN(T) __impl_fn_rtti_##T##_value_is
 #define TRTTI_GET_SHADOW_DATA(T) __impl_fn_rtti_##T##_get_shadow_data
@@ -178,6 +179,12 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 		return false;
 	}
 	return true;
+}
+
+TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTIAnnotatedValue TRTTI_VALUE_GET_EMPTY_FN(void) {
+	const RTTITypeInfo info =
+	    TRTTI_LITERAL_IMPL(RTTITypeInfo){ .name = TRTTI_TYPE_NAME_LIT_CONST("<EMPTY>"), .id = 0 };
+	return TRTTI_LITERAL_IMPL(RTTIAnnotatedValue){ .type = info, .ptr = NULL };
 }
 
 #define TRTTI_DECLARE_TYPE_AS_SUPPORTED_EXTENDED(Type, Typename) \
@@ -311,6 +318,7 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 #define TRTTI_DESTROY(Type, data) TRTTI_DESTROY_NAME(Type)(data)
 
 #define TRTTI_ANNOTATED_VALUE_GET(Type, value) TRTTI_VALUE_GET_FN(Type)(value)
+#define TRTTI_ANNOTATED_VALUE_GET_EMPTY() TRTTI_VALUE_GET_EMPTY_FN()
 #define TRTTI_ANNOTATED_VALUE_CAST(Type, value) TRTTI_VALUE_CAST_FN(Type)(value)
 #define TRTTI_ANNOTATED_VALUE_IS(Type, value) TRTTI_VALUE_IS_FN(Type)(value)
 
