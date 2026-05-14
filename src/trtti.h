@@ -1,5 +1,6 @@
 #pragma once
 
+#include <inttypes.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -165,8 +166,8 @@ static_assert(BUILTIN_CLASSIFY_TYPE(void*) == BUILTIN_CLASSIFY_TYPE(void*));
 TRTTI_FUN_ATTRIBUTES __attribute__((noreturn)) void TRTTI_PANIC_FOR_TYPE_FN(RTTITypeInfo expected,
                                                                             RTTITypeInfo got) {
 	fprintf(stderr,
-	        "[%s %s:%d]: PANIC: INVALID access of rtti type " TRTTI_TYPE_NAME_FMT
-	        "(%zu): got " TRTTI_TYPE_NAME_FMT "(%zu) instead\n",
+	        "[%s %s:%d]: PANIC: INVALID access of rtti type " TRTTI_TYPE_NAME_FMT "(%" PRIu64
+	        "): got " TRTTI_TYPE_NAME_FMT "(%" PRIu64 ") instead\n",
 	        __func__, __FILE__, __LINE__, TRTTI_TYPE_NAME_FMT_ARGS(got.name), got.id,
 	        TRTTI_TYPE_NAME_FMT_ARGS(expected.name), expected.id);
 	exit(EXIT_FAILURE);
