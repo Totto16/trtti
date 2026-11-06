@@ -152,7 +152,6 @@ static_assert(BUILTIN_CLASSIFY_TYPE(void*) == BUILTIN_CLASSIFY_TYPE(void*));
 	#define TRTTI_SECTION_CUSTOM __attribute__((visibility("default")))
 #else
 	#define TRTTI_SECTION_CUSTOM __attribute__((visibility("default"), externally_visible))
-
 #endif
 
 #define TRTTI_SECTION TRTTI_SECTION_NAME TRTTI_SECTION_CUSTOM
@@ -208,7 +207,16 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTIAnnotatedValue TRTTI_VALUE_GET_EMPTY_FN
 		 * address of the variable in the static memory,  so this can't be static :(*/ \
 		if(TRTTI_STATIC_TYPEINFO(Typename).id == TRTTI_INVALID_ID) { \
 			TRTTI_STATIC_TYPEINFO(Typename).id = TRTTI_ID_OF_TYPE(Typename); \
-			assert(TRTTI_STATIC_TYPEINFO(Typename).id != TRTTI_INVALID_ID); \
+			if(TRTTI_STATIC_TYPEINFO(Typename).id == TRTTI_INVALID_ID) { \
+				fprintf( \
+				    stderr, \
+				    "[%s %s:%d]: [INTERNAL] PANIC: INVALID ID of rtti type " TRTTI_TYPE_NAME_FMT \
+				    "(%" PRIu64 ")\n", \
+				    __func__, __FILE__, __LINE__, \
+				    TRTTI_TYPE_NAME_FMT_ARGS(TRTTI_STATIC_TYPEINFO(Typename).name), \
+				    TRTTI_STATIC_TYPEINFO(Typename).id); \
+				exit(EXIT_FAILURE); \
+			} \
 		} \
 \
 		return TRTTI_STATIC_TYPEINFO(Typename); \
