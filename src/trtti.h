@@ -84,6 +84,8 @@ extern "C" {
 #define TRTTI_TYPE_NAME_FMT "%.*s"
 #define TRTTI_TYPE_NAME_FMT_ARGS(str) ((int)((str).len)), ((str).ptr)
 
+#define TRTTI_INVALID_ID 0
+
 typedef struct {
 	RTTITypeName name;
 	RTTIUniqueId id;
@@ -159,7 +161,7 @@ static_assert(BUILTIN_CLASSIFY_TYPE(void*) == BUILTIN_CLASSIFY_TYPE(void*));
 	TRTTI_SECTION extern const uint8_t TRTTI_GLOBAL_ID_DATA(Typename);
 
 #define TRTTI_TYPE_IDENTIFIER_DECLARATION(Typename) \
-	TRTTI_SECTION const uint8_t TRTTI_GLOBAL_ID_DATA(Typename) = 0;
+	TRTTI_SECTION const uint8_t TRTTI_GLOBAL_ID_DATA(Typename) = 0U;
 
 #define TRTTI_ID_OF_TYPE(Type) (RTTIUniqueId)((uintptr_t)(&(TRTTI_GLOBAL_ID_DATA(Type))))
 
@@ -183,8 +185,8 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES bool TRTTI_MATCHES_TYPE_FN(RTTITypeInfo exp
 }
 
 TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTIAnnotatedValue TRTTI_VALUE_GET_EMPTY_FN(void) {
-	const RTTITypeInfo info =
-	    TRTTI_LITERAL_IMPL(RTTITypeInfo){ .name = TRTTI_TYPE_NAME_LIT_CONST("<EMPTY>"), .id = 0 };
+	const RTTITypeInfo info = TRTTI_LITERAL_IMPL(
+	    RTTITypeInfo){ .name = TRTTI_TYPE_NAME_LIT_CONST("<EMPTY>"), .id = TRTTI_INVALID_ID };
 	return TRTTI_LITERAL_IMPL(RTTIAnnotatedValue){ .type = info, .ptr = NULL };
 }
 
@@ -201,11 +203,12 @@ TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTIAnnotatedValue TRTTI_VALUE_GET_EMPTY_FN
 \
 	TRTTI_NODISCARD TRTTI_FUN_ATTRIBUTES RTTITypeInfo TRTTI_GET_TYPEINFO(Typename)(void) { \
 		static RTTITypeInfo TRTTI_STATIC_TYPEINFO( \
-		    Typename) = { .name = TRTTI_TYPE_NAME_LIT_CONST(#Type), .id = 0 }; \
+		    Typename) = { .name = TRTTI_TYPE_NAME_LIT_CONST(#Type), .id = TRTTI_INVALID_ID }; \
 		/* TRTTI_ID_OF_TYPE(Type)  isn't constant, as it requires final executables info alias the \
 		 * address of the variable in the static memory,  so this can't be static :(*/ \
-		if(TRTTI_STATIC_TYPEINFO(Typename).id == 0) { \
+		if(TRTTI_STATIC_TYPEINFO(Typename).id == TRTTI_INVALID_ID) { \
 			TRTTI_STATIC_TYPEINFO(Typename).id = TRTTI_ID_OF_TYPE(Typename); \
+			assert(TRTTI_STATIC_TYPEINFO(Typename).id != TRTTI_INVALID_ID); \
 		} \
 \
 		return TRTTI_STATIC_TYPEINFO(Typename); \
