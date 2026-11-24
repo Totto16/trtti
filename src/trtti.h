@@ -84,6 +84,9 @@ extern "C" {
 #define TRTTI_TYPE_NAME_FMT "%.*s"
 #define TRTTI_TYPE_NAME_FMT_ARGS(str) ((int)((str).len)), ((str).ptr)
 
+#define TRTTI_FMT TRTTI_TYPE_NAME_FMT
+#define TRTTI_FMT_ARGS(trtti_value) TRTTI_TYPE_NAME_FMT_ARGS((trtti_value).type.name)
+
 #define TRTTI_INVALID_ID 0
 
 typedef struct {
